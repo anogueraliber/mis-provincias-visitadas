@@ -326,13 +326,21 @@ svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
 
 /* ---------- Copias de seguridad ---------- */
 var NAMES={v:'ido',w:'quiero',l:'vivo',p:'vivida'},CODES={ido:'v',quiero:'w',vivo:'l',vivida:'p'};
+function saveBackup(obj,name){
+  var text=JSON.stringify(obj,null,2),mobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  try{ // en móvil: menú de compartir → «Guardar en Archivos» pregunta si reemplazar el archivo anterior
+    var file=new File([text],name,{type:'application/json'});
+    if(mobile&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file]}).catch(function(){});return}
+  }catch(e){}
+  var blob=new Blob([text],{type:'application/json'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+}
 $('exp').onclick=function(){
   var out={app:'mis-paises-visitados',version:1,exportado:new Date().toISOString(),paises:{}};
   Object.keys(data).forEach(function(id){var r=data[id],f=byId[id];if(!f||!(r.s||r.y||r.n))return;
     out.paises[id]={estado:NAMES[r.s]||'',anio:r.y||'',notas:r.n||'',nombre:f.n}});
-  var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download='mis-paises-'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+  saveBackup(out,'mis-paises.json');
 };
 $('imp').onclick=function(){$('file').click()};
 $('file').onchange=function(){
