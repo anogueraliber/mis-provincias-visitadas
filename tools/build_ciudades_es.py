@@ -1,4 +1,4 @@
-"""Genera ciudades.json (PROVISIONAL) con los municipios españoles de más de 20.000 habitantes.
+"""Genera tools/intermedios/es_ciudades.json (PROVISIONAL) con los municipios españoles de más de 20.000 habitantes.
 Fuentes: lista oficial de municipios con código INE y coordenadas (paquete npm `spanish-cities-info`, volcado a JSON)
          + población de GeoNames (paquete `geonamescache`), cruzada por nombre y cercanía.
 Uso: python tools/build_ciudades.py <municipios_ine.json>      (requiere: pip install geonamescache)
@@ -28,7 +28,7 @@ def km(a, b):
     return 12742 * math.asin(math.sqrt(h))
 
 munis = json.load(open(sys.argv[1], encoding='utf-8'))
-prov = {f['properties']['id']: f['properties']['name'] for f in json.load(open('provincias.geojson', encoding='utf-8'))['features']}
+prov = {f['properties']['id']: f['properties']['name'] for f in json.load(open('tools/intermedios/es_unidades.geojson', encoding='utf-8'))['features']}
 prov.update({'51': 'Ceuta', '52': 'Melilla'})
 gn = [c for c in geonamescache.GeonamesCache().get_cities().values() if c['countrycode'] == 'ES']
 for c in gn: c['keys'] = {norm(c['name'])} | {norm(a) for a in c.get('alternatenames', []) if a}
@@ -62,7 +62,7 @@ border = sorted((c for c in out if c['rev']), key=lambda c: c['pop'])
 ids = [c['id'] for c in sel]; assert len(ids) == len(set(ids))
 for c in sel + border: c.pop('off', None)
 json.dump({'fuente': 'INE (municipios, códigos y coordenadas) + GeoNames (población, provisional)', 'umbral': MIN_POP,
-           'ciudades': sel, 'cercanas_al_limite': border}, open('ciudades.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+           'ciudades': sel, 'cercanas_al_limite': border}, open('tools/intermedios/es_ciudades.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 print(len(sel), 'municipios >=', MIN_POP, '|', sum(1 for c in sel if c['big']), '>=', BIG, '|', len(border), 'en franja de revisión |', sum(1 for c in sel if c.get('old')), 'con alias antiguo')
 # diagnóstico: puntos GeoNames >= 20000 sin municipio asignado (posibles barrios o fallos de emparejado)
 sel_gid = used

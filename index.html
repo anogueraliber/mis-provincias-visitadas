@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Mis provincias visitadas</title>
+<title>Mis lugares visitados</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Registro personal de las provincias españolas visitadas. Sin cuenta, sin GPS, sin anuncios.">
+<meta name="description" content="Registro personal de provincias y ciudades visitadas. Sin cuenta, sin GPS, sin anuncios.">
 <meta name="theme-color" content="#1f7a4d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -27,7 +27,7 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--text);
   font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-main{max-width:1100px;margin:0 auto;padding:12px 16px 32px}
+main{max-width:1100px;margin:0 auto;padding:6px 16px 32px}
 h1{font-size:1.4rem;margin:8px 0 12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
 .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -42,20 +42,18 @@ h1{font-size:1.4rem;margin:8px 0 12px}
 .layout{display:grid;gap:14px;margin-top:14px}
 @media (min-width:860px){.layout{grid-template-columns:1.5fr 1fr;align-items:start}}
 #mapwrap{position:relative;padding:8px}
-#map{width:100%;height:auto;aspect-ratio:1.18;display:block;touch-action:none;user-select:none;-webkit-user-select:none;
-  -webkit-touch-callout:none;cursor:grab}
-#map path{fill:var(--pend);stroke:var(--stroke);stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round;cursor:pointer;
-  -webkit-tap-highlight-color:transparent}
+#map{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+#map path{fill:var(--pend);stroke:var(--stroke);stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round;cursor:pointer;-webkit-tap-highlight-color:transparent}
 #map path.v{fill:var(--ok)}
+#map path.a{fill:var(--ok);fill-opacity:.55}
 #map path.sel{stroke:var(--sel);stroke-width:2.5}
 #map .dot{fill:var(--dotfill);stroke:var(--dotline);stroke-width:1.2;vector-effect:non-scaling-stroke;cursor:pointer;pointer-events:none}
 #map .dot.v{fill:var(--city);stroke:var(--dotfill)}
 #map .dot.sel{stroke:var(--sel);stroke-width:3}
 #map .frame{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
 .zoom{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:6px}
-.zoom button{width:40px;height:40px;font-size:1.4rem;padding:0}
-button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;
-  padding:9px 14px;cursor:pointer;min-height:40px}
+.zoom button{width:40px;height:40px;font-size:1.4rem;padding:0;justify-content:center}
+button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:9px 14px;cursor:pointer;min-height:40px;display:inline-flex;align-items:center}
 button:active,.btn:active{opacity:.7}
 button.primary{background:var(--ok-dark);border-color:var(--ok-dark);color:#fff}
 button.danger{color:var(--danger);border-color:var(--danger)}
@@ -63,19 +61,15 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .legend label{display:flex;align-items:center;gap:6px;cursor:pointer}
 .legend .d{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--dotline);margin-right:6px;vertical-align:-1px;background:var(--dotfill)}
 .legend .d.v{background:var(--city);border-color:var(--dotfill);outline:1px solid var(--dotline)}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 #msg{color:var(--danger);margin:8px 4px 0;display:none}
 #detail h2{margin:0 0 4px;font-size:1.15rem}
 #dsub{color:var(--muted);font-size:.85rem;margin-bottom:6px}
 #detail .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
 label.f{display:block;margin-top:10px;font-size:.9rem;color:var(--muted)}
-input[type=number],input[type=search],textarea,select{
-  width:100%;font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;
-  background:var(--bg);color:var(--text);margin-top:4px}
+input[type=number],input[type=search],textarea,select{width:100%;font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin-top:4px}
 textarea{min-height:80px;resize:vertical}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-#list,#clist{list-style:none;margin:10px 0 0;padding:0;max-height:430px;overflow:auto;-webkit-overflow-scrolling:touch;
-  border:1px solid var(--line);border-radius:10px}
+#list,#clist{list-style:none;margin:10px 0 0;padding:0;max-height:430px;overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px}
 #list li,#clist li{display:flex;align-items:center;border-bottom:1px solid var(--line)}
 #list li:last-child,#clist li:last-child{border-bottom:0}
 #clist li.grp{background:var(--bg);color:var(--muted);font-size:.8rem;font-weight:600;padding:6px 12px;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0;z-index:1}
@@ -85,7 +79,8 @@ textarea{min-height:80px;resize:vertical}
 #list small,#clist small{color:var(--muted)}
 #list .info,#clist .info{border:0;background:none;color:var(--muted);padding:6px 14px;min-height:44px}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
-.tabs button[aria-selected=true]{background:var(--ok-dark);border-color:var(--ok-dark);color:#fff}
+.tabs button[aria-selected=true]{background:var(--ok-dark);border-color:var(--ok-dark);color:#fff;justify-content:center}
+.tabs button{justify-content:center}
 .note{color:var(--muted);font-size:.8rem;margin:8px 2px 0}
 .filters{display:flex;gap:8px;margin-top:10px}
 .filters select{margin:0}
@@ -95,30 +90,33 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
 </head>
 <body>
 <main>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 12px"><h1 style="margin:0">Mis provincias visitadas</h1><a class="btn" href="mundo.html" style="text-decoration:none;display:inline-flex;align-items:center">🌍 Mapa mundial</a></div>
+  <nav id="nav" aria-label="Países"></nav>
+  <h1 id="title">Cargando…</h1>
 
   <section class="card" aria-live="polite">
     <div class="statgrid">
-      <div><div class="stats"><small>Provincias</small><b id="count">0/50</b><span id="pct">0 %</span></div>
-        <div class="bar"><i id="bar"></i></div></div>
-      <div><div class="stats c"><small>Ciudades &gt; 20.000 hab.</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div>
-        <div class="bar c"><i id="cbar"></i></div></div>
+      <div><div class="stats"><small id="l1">Provincias</small><b id="count">0/0</b><span id="pct">0 %</span></div><div class="bar"><i id="bar"></i></div></div>
+      <div><div class="stats c"><small>Ciudades &gt; 20.000 hab.</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div><div class="bar c"><i id="cbar"></i></div></div>
     </div>
   </section>
 
   <div class="layout">
     <div>
       <section class="card" id="mapwrap">
-        <svg id="map" viewBox="0 0 100 100" role="img" aria-label="Mapa de las provincias de España"></svg>
+        <svg id="map" viewBox="0 0 100 100" role="img" aria-label="Mapa"></svg>
         <div class="zoom">
           <button id="zin" aria-label="Acercar">+</button>
           <button id="zout" aria-label="Alejar">−</button>
           <button id="zreset" aria-label="Restablecer vista" style="font-size:1rem">⟲</button>
         </div>
       </section>
-      <div class="legend"><span><i style="background:var(--ok)"></i>Provincia visitada</span><span><i style="background:var(--pend)"></i>Pendiente</span>
+      <div class="legend">
+        <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;background:var(--ok)"></i>Visitada</span>
+        <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;background:var(--ok);opacity:.55"></i>Visitada por una ciudad</span>
+        <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;background:var(--pend)"></i>Pendiente</span>
         <span><i class="d v"></i>Ciudad visitada</span><span><i class="d"></i>Pendiente</span>
-        <label><input type="checkbox" id="showc" checked> Mostrar ciudades</label></div>
+        <label><input type="checkbox" id="showc" checked> Mostrar ciudades</label>
+      </div>
       <p id="msg">No se pudo cargar el mapa. Puedes seguir usando la lista.</p>
     </div>
 
@@ -152,7 +150,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
         <ul id="list"></ul>
         <ul id="clist" hidden></ul>
         <div id="empty">Sin resultados.</div>
-        <p class="note" id="cnote" hidden>Lista provisional: municipios de más de 20.000 hab. (lista del INE con población de GeoNames, no oficial). Puede faltar alguno de población dispersa y sobrar o faltar los cercanos al límite; pendiente de revisar con el padrón del INE. Las de 20.000–50.000 aparecen en el mapa al hacer zoom. Ceuta y Melilla cuentan aquí como ciudades.</p>
+        <p class="note" id="cnote" hidden></p>
         <div class="tools">
           <button id="exp">Guardar</button>
           <button id="imp">Importar copia</button>
@@ -163,50 +161,67 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
     </div>
   </div>
 
-  <footer>Los datos se guardan solo en este navegador. Si borras los datos del sitio o cambias de dispositivo, se pierden: usa «Guardar» y «Importar copia». Ceuta y Melilla (ciudades autónomas) no cuentan como provincias.</footer>
+  <footer id="foot"></footer>
 </main>
 
+<script src="common.js"></script>
 <script>
 (function(){
 'use strict';
-var KEY='misProvinciasVisitadas.v1', NS='http://www.w3.org/2000/svg';
-var byOld={}, data={}, feats=[], cities=[], byId={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
+var NS='http://www.w3.org/2000/svg';
+var CC=new URLSearchParams(location.search).get('p');if(['es','fr','it','gr'].indexOf(CC)<0)CC='es';
+var FUENTES={
+ es:'Límites provinciales: datos abiertos (click_that_hood). Municipios, códigos y coordenadas: INE; población: GeoNames (provisional).',
+ fr:'Límites: Natural Earth (dominio público). Comunas y población: INSEE vía Etalab (Licence Ouverte). Coordenadas: GeoNames.',
+ it:'Límites: geoBoundaries (CC BY 4.0). Comuni y población (censo 2011): ISTAT (CC BY 3.0 IT) vía comuni-json. Coordenadas: GeoNames.',
+ gr:'Límites: geoBoundaries (CC BY 4.0), agrupados en unidades regionales con la tabla de @tsevdos/el-utils (MIT). Ciudades y población: GeoNames (provisional).'};
+var NOTAS={
+ es:'Lista provisional: municipios de más de 20.000 hab. (lista del INE con población de GeoNames, no oficial). Puede faltar alguno de población dispersa y sobrar o faltar los cercanos al límite. Ceuta y Melilla cuentan aquí como ciudades.',
+ fr:'Comunas de más de 20.000 hab. con población legal del INSEE (año por confirmar). Paris, Marsella y Lyon cuentan como una sola. Algunas comunas nuevas fusionadas pueden estar situadas en su núcleo principal o no tener punto en el mapa.',
+ it:'Comuni de más de 20.000 hab. con población del censo 2011 (ISTAT, vía comuni-json, lista de 2020): pueden faltar los creados desde 2020 y las cifras han cambiado. Algún comune no tiene punto en el mapa.',
+ gr:'Lista provisional: municipios de más de 20.000 hab. según GeoNames filtrado con la lista oficial de municipios; la población no es oficial y puede faltar alguno.'};
+var data=V.ns(CC), UD=null, feats=[], cities=[], byId={}, byOld={}, citiesOf={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
+var svg=document.getElementById('map'),base,view;
 
 function $(id){return document.getElementById(id)}
-function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object')data=r}catch(e){data={}}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
 function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
-function rec(id){return data[id]||(data[id]={v:0,y:'',n:''})}
-function isV(id){return !!(data[id]&&data[id].v)}
-function clean(id){var r=data[id];if(r&&!r.v&&!r.y&&!r.n)delete data[id]}
 function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
+function rec(id){return data[id]||(data[id]={v:0,y:'',n:''})}
+function marked(id){return !!(data[id]&&data[id].v)}
+function clean(id){var r=data[id];if(r&&!r.v&&!r.y&&!r.n)delete data[id]}
+function derivedBy(uid){return (citiesOf[uid]||[]).filter(function(c){return marked(c.id)})}   // ciudades marcadas dentro de la unidad
+function eff(id){var f=byId[id];return f&&!f.city?(marked(id)||derivedBy(id).length>0):marked(id)}
 
 /* ---------- Estadísticas ---------- */
-function countOf(list){var n=0;list.forEach(function(f){if(isV(f.id))n++});return n}
-function stat(list,c,p,b,total){
-  var n=countOf(list),t=total||list.length,pc=t?Math.round(n*100/t):0;
+function stat(list,c,p,b){
+  var n=list.filter(function(f){return eff(f.id)}).length,t=list.length,pc=t?Math.round(n*100/t):0;
   $(c).textContent=n+'/'+t;$(p).textContent=pc+' %';$(b).style.width=pc+'%';
 }
-function stats(){stat(feats,'count','pct','bar',feats.length||50);stat(cities,'ccount','cpct','cbar',cities.length)}
+function stats(){stat(feats,'count','pct','bar');stat(cities,'ccount','cpct','cbar')}
 
-/* ---------- Cambios de estado ---------- */
-function refresh(id){
-  var v=isV(id);
-  if(paths[id])paths[id].classList.toggle('v',v);
-  if(dots[id])dots[id].classList.toggle('v',v);
+/* ---------- Estado de cada elemento ---------- */
+function refresh(id,noCascade){
+  var f=byId[id];if(!f)return;var v=eff(id);
+  if(paths[id]){paths[id].classList.toggle('v',marked(id));paths[id].classList.toggle('a',!marked(id)&&v)}
+  if(dots[id])dots[id].classList.toggle('v',marked(id));
   if(rows[id]){
     rows[id].cb.checked=v;var r=data[id]||{};
-    rows[id].sm.textContent=[r.y||'',r.n?'📝':''].filter(Boolean).join(' ');
+    rows[id].sm.textContent=[(!f.city&&!marked(id)&&v)?'por ciudad':'',r.y||'',r.n?'📝':''].filter(Boolean).join(' · ');
   }
+  if(f.city&&!noCascade&&byId[f.p]&&!byId[f.p].city)refresh(f.p,true);   // marcar una ciudad marca su provincia
   stats();applyFilter();if(dots[id])updateMinor();
   if(sel===id)drawDetail();
 }
-function setV(id,v){rec(id).v=v?1:0;clean(id);save();refresh(id)}
-function toggle(id){setV(id,!isV(id))}
+function setMark(id,on){rec(id).v=on?1:0;clean(id);V.save();refresh(id)}
+function toggle(id){
+  var f=byId[id];
+  if(!f.city&&!marked(id)&&derivedBy(id).length){V.toast(f.name+' ya está marcada por: '+derivedBy(id).map(function(c){return c.name}).slice(0,3).join(', ')+'. Desmarca esas ciudades para quitarla.');return}
+  setMark(id,!marked(id));
+  if(!f.city&&!marked(id)&&derivedBy(id).length)V.toast(f.name+' sigue marcada por sus ciudades.');
+}
 function mark(id,on){
   var el=paths[id]||dots[id];if(!el)return;el.classList.toggle('sel',on);
   if(on&&paths[id]&&citiesG)citiesG.parentNode.insertBefore(paths[id],citiesG);
-  else if(on&&paths[id])paths[id].parentNode.appendChild(paths[id]);
 }
 function select(id,scroll){
   var old=sel;sel=id;
@@ -216,21 +231,26 @@ function select(id,scroll){
   if(scroll)$('detail').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function drawDetail(){
-  if(!sel)return;
-  var f=byId[sel],r=data[sel]||{};
+  if(!sel)return;var f=byId[sel],r=data[sel]||{};
   $('dname').textContent=f.name;$('dbody').hidden=false;
-  $('dsub').textContent=f.city?'Ciudad · '+f.pname+' · ≈ '+fmt(f.pop)+' hab. (GeoNames, provisional)':'Provincia';
-  var b=$('dtoggle');b.textContent=isV(sel)?'✓ Visitada — quitar':'Marcar como visitada';
-  b.className=isV(sel)?'':'primary';
+  var sub;
+  if(f.city)sub='Ciudad · '+f.pname+' · ≈ '+fmt(f.pop)+' hab. (provisional)';
+  else{var d=derivedBy(sel);sub=UD.unidad1.charAt(0).toUpperCase()+UD.unidad1.slice(1)+(d.length&&!marked(sel)?' · visitada por: '+d.slice(0,4).map(function(c){return c.name}).join(', ')+(d.length>4?' y '+(d.length-4)+' más':''):'')}
+  $('dsub').textContent=sub;
+  var b=$('dtoggle');
+  if(marked(sel)){b.textContent='✓ Visitada — quitar';b.className=''}
+  else if(!f.city&&derivedBy(sel).length){b.textContent='Marcar también a mano';b.className='primary'}
+  else{b.textContent='Marcar como visitada';b.className='primary'}
   if(document.activeElement!==$('dyear'))$('dyear').value=r.y||'';
   if(document.activeElement!==$('dnote'))$('dnote').value=r.n||'';
 }
-$('dtoggle').onclick=function(){if(sel)toggle(sel)};
-$('dyear').oninput=function(){
-  if(!sel)return;var y=this.value.replace(/\D/g,'').slice(0,4);
-  rec(sel).y=y;clean(sel);save();refresh(sel);
+$('dtoggle').onclick=function(){
+  if(!sel)return;var f=byId[sel];
+  if(!f.city&&!marked(sel)&&derivedBy(sel).length){setMark(sel,true);return}
+  toggle(sel);
 };
-$('dnote').oninput=function(){if(!sel)return;rec(sel).n=this.value;clean(sel);save();refresh(sel)};
+$('dyear').oninput=function(){if(!sel)return;rec(sel).y=this.value.replace(/\D/g,'').slice(0,4);clean(sel);V.save();refresh(sel)};
+$('dnote').oninput=function(){if(!sel)return;rec(sel).n=this.value;clean(sel);V.save();refresh(sel)};
 
 /* ---------- Listas ---------- */
 function addRow(ul,f){
@@ -239,10 +259,14 @@ function addRow(ul,f){
   cb.type='checkbox';nm.textContent=f.name;inf.className='info';inf.textContent='Detalles';
   inf.setAttribute('aria-label','Año y notas de '+f.name);
   lb.appendChild(cb);lb.appendChild(nm);lb.appendChild(sm);li.appendChild(lb);li.appendChild(inf);ul.appendChild(li);
-  cb.onchange=function(){setV(f.id,cb.checked);select(f.id,false)};
+  cb.onchange=function(){
+    if(cb.checked)setMark(f.id,true);
+    else if(marked(f.id)){setMark(f.id,false);if(!f.city&&derivedBy(f.id).length)V.toast(f.name+' sigue marcada por sus ciudades.')}
+    else{refresh(f.id);V.toast(f.name+' está marcada por sus ciudades; desmárcalas para quitarla.')}
+    select(f.id,false);
+  };
   inf.onclick=function(){select(f.id,true)};
   rows[f.id]={li:li,cb:cb,sm:sm,key:norm(f.name+' '+(f.pname||''))};
-  return li;
 }
 function buildList(){
   var ul=$('list');ul.textContent='';
@@ -252,63 +276,41 @@ function buildCities(){
   var ul=$('clist');ul.textContent='';groups=[];
   var last=null,g=null;
   cities.slice().sort(function(a,b){return a.pname.localeCompare(b.pname,'es')||a.name.localeCompare(b.name,'es')}).forEach(function(c){
-    if(c.pname!==last){
-      last=c.pname;var h=document.createElement('li');h.className='grp';h.textContent=c.pname;ul.appendChild(h);g={li:h,ids:[]};groups.push(g);
-    }
+    if(c.pname!==last){last=c.pname;var h=document.createElement('li');h.className='grp';h.textContent=c.pname;ul.appendChild(h);g={li:h,ids:[]};groups.push(g)}
     addRow(ul,c);g.ids.push(c.id);
   });
 }
 function applyFilter(){
-  var q=norm($('q').value.trim()),m=$('flt').value,shown=0;
+  var q=norm($('q').value.trim()),m=$('flt').value,shown=0,sz=$('csize').value;
   Object.keys(rows).forEach(function(id){
-    var inMode=!!byId[id].city===(mode==='c');
-    var f=byId[id],sz=$('csize').value;
-    var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===isV(id))&&(!f.city||sz==='all'||(sz==='big')===f.big);
+    var f=byId[id],inMode=!!f.city===(mode==='c');
+    var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===eff(id))&&(!f.city||sz==='all'||(sz==='big')===f.big);
     rows[id].li.style.display=ok?'':'none';if(ok&&inMode)shown++;
   });
-  groups.forEach(function(g){
-    g.li.style.display=g.ids.some(function(id){return rows[id].li.style.display!=='none'})?'':'none';
-  });
+  groups.forEach(function(g){g.li.style.display=g.ids.some(function(id){return rows[id].li.style.display!=='none'})?'':'none'});
   $('empty').style.display=shown?'none':'block';
 }
 function setMode(m){
   mode=m;
   $('csize').hidden=m!=='c';$('list').hidden=m!=='p';$('clist').hidden=m!=='c';$('cnote').hidden=m!=='c';
   $('tabp').setAttribute('aria-selected',m==='p');$('tabc').setAttribute('aria-selected',m==='c');
-  $('q').placeholder=m==='p'?'Buscar provincia…':'Buscar ciudad o provincia…';
+  $('q').placeholder=m==='p'?'Buscar '+UD.unidad1+'…':'Buscar ciudad o '+UD.unidad1+'…';
   applyFilter();
 }
 $('tabp').onclick=function(){setMode('p')};$('tabc').onclick=function(){setMode('c')};
 $('q').oninput=applyFilter;$('flt').onchange=applyFilter;$('csize').onchange=applyFilter;
 
 /* ---------- Mapa ---------- */
-var svg=$('map'),base,view;
-function project(lon,lat,pid){
-  if(pid==='35'||pid==='38'){lon+=8.6;lat+=6.1}  // Canarias en recuadro
-  return [lon*0.766,-lat];
-}
-function drawMap(gj){
-  feats=gj.features.map(function(ft){return{id:ft.properties.id,name:ft.properties.name,geom:ft.geometry}});
-  feats.forEach(function(f){byId[f.id]=f});
-  var minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9,cb=[1e9,1e9,-1e9,-1e9];
-  feats.forEach(function(f){
-    var d='';
-    f.geom.coordinates.forEach(function(poly){poly.forEach(function(ring){
-      ring.forEach(function(c,i){
-        var p=project(c[0],c[1],f.id);d+=(i?'L':'M')+p[0].toFixed(3)+' '+p[1].toFixed(3);
-        if(p[0]<minx)minx=p[0];if(p[0]>maxx)maxx=p[0];if(p[1]<miny)miny=p[1];if(p[1]>maxy)maxy=p[1];
-        if(f.id==='35'||f.id==='38'){if(p[0]<cb[0])cb[0]=p[0];if(p[1]<cb[1])cb[1]=p[1];if(p[0]>cb[2])cb[2]=p[0];if(p[1]>cb[3])cb[3]=p[1]}
-      });d+='Z';
-    })});
-    var el=document.createElementNS(NS,'path');el.setAttribute('d',d);el.setAttribute('fill-rule','evenodd');
-    el.dataset.id=f.id;var t=document.createElementNS(NS,'title');t.textContent=f.name;el.appendChild(t);
-    svg.appendChild(el);paths[f.id]=el;
+function drawMap(ud){
+  var b=ud.box;base={x:b[0],y:b[1],w:b[2],h:b[3]};
+  ud.frames.forEach(function(fr){
+    var r=document.createElementNS(NS,'rect');r.setAttribute('x',fr[0]);r.setAttribute('y',fr[1]);r.setAttribute('width',fr[2]);r.setAttribute('height',fr[3]);r.setAttribute('class','frame');svg.appendChild(r);
   });
-  var pad=0.6;
-  var fr=document.createElementNS(NS,'rect');
-  fr.setAttribute('x',cb[0]-.3);fr.setAttribute('y',cb[1]-.3);fr.setAttribute('width',cb[2]-cb[0]+.6);fr.setAttribute('height',cb[3]-cb[1]+.6);
-  fr.setAttribute('class','frame');svg.insertBefore(fr,svg.firstChild);
-  base={x:minx-pad,y:miny-pad,w:maxx-minx+2*pad,h:maxy-miny+2*pad};
+  ud.items.forEach(function(i){
+    var el=document.createElementNS(NS,'path'),t=document.createElementNS(NS,'title');
+    el.setAttribute('d',i.d);el.setAttribute('fill-rule','evenodd');el.dataset.id=i.id;t.textContent=i.n;el.appendChild(t);
+    svg.appendChild(el);paths[i.id]=el;
+  });
   svg.style.aspectRatio=(base.w/base.h).toFixed(3);
   citiesG=document.createElementNS(NS,'g');citiesG.setAttribute('id','cities');svg.appendChild(citiesG);
   view=Object.assign({},base);setView();
@@ -316,21 +318,19 @@ function drawMap(gj){
 function drawDots(){
   if(!citiesG)return;
   cities.forEach(function(c){
-    var p=project(c.lon,c.lat,c.p);c.x=p[0];c.y=p[1];
+    if(c.x==null)return;
     var d=document.createElementNS(NS,'circle'),t=document.createElementNS(NS,'title');
     d.setAttribute('class','dot');t.textContent=c.name;d.appendChild(t);
-    d.setAttribute('cx',c.x.toFixed(3));d.setAttribute('cy',c.y.toFixed(3));
-    citiesG.appendChild(d);dots[c.id]=d;
+    d.setAttribute('cx',c.x);d.setAttribute('cy',c.y);citiesG.appendChild(d);dots[c.id]=d;
   });
   sizeDots();
 }
-function updateMinor(){
+function updateMinor(){ // las ciudades de 20.000–50.000 solo se ven con zoom (o si están marcadas o seleccionadas)
   if(!citiesG||!view)return;var show=base.w/view.w>=2.2;
-  cities.forEach(function(c){var el=dots[c.id];if(!el||c.big)return;c.vis=show||isV(c.id)||sel===c.id;el.style.display=c.vis?'':'none'});
+  cities.forEach(function(c){var el=dots[c.id];if(!el||c.big)return;c.vis=show||marked(c.id)||sel===c.id;el.style.display=c.vis?'':'none'});
 }
 function sizeDots(){
-  if(!citiesG||!view)return;
-  var w=svg.clientWidth||320,u=view.w/w;
+  if(!citiesG||!view)return;var u=view.w/(svg.clientWidth||320);
   cities.forEach(function(c){if(dots[c.id])dots[c.id].setAttribute('r',(3.2*u).toFixed(4))});
   updateMinor();
 }
@@ -368,105 +368,60 @@ svg.addEventListener('pointerdown',function(e){
 });
 svg.addEventListener('pointermove',function(e){
   var p=ptrs[e.pointerId];if(!p)return;
-  var all=pts(),r=svg.getBoundingClientRect();
-  p.x=e.clientX;p.y=e.clientY;
+  var all=pts(),r=svg.getBoundingClientRect();p.x=e.clientX;p.y=e.clientY;
   if(all.length===2){
     var d=Math.hypot(all[0].x-all[1].x,all[0].y-all[1].y);
     if(startD>0){var c=toMap((all[0].x+all[1].x)/2,(all[0].y+all[1].y)/2);zoomAt(d/startD,c[0],c[1])}
     startD=d;return;
   }
   if(Math.hypot(e.clientX-p.sx,e.clientY-p.sy)>6)moved=true;
-  if(moved&&all.length===1){
-    view.x-=(e.clientX-lastC.x)/r.width*view.w;view.y-=(e.clientY-lastC.y)/r.height*view.h;clampView();setView();
-  }
+  if(moved&&all.length===1){view.x-=(e.clientX-lastC.x)/r.width*view.w;view.y-=(e.clientY-lastC.y)/r.height*view.h;clampView();setView()}
   lastC={x:e.clientX,y:e.clientY};
 });
 function up(e){
-  if(!ptrs[e.pointerId])return;
-  delete ptrs[e.pointerId];
+  if(!ptrs[e.pointerId])return;delete ptrs[e.pointerId];
   if(!pts().length&&!moved&&e.type==='pointerup'){
     var id=tapId;
     if(citiesG&&citiesG.style.display!=='none'){ // gana la ciudad más cercana al dedo (radio 14 px)
       var m=toMap(e.clientX,e.clientY),u=view.w/svg.clientWidth,bd=14*u;
-      cities.forEach(function(c){if(!c.big&&!c.vis)return;var d=Math.hypot(c.x-m[0],c.y-m[1]);if(d<bd){bd=d;id=c.id}});
+      cities.forEach(function(c){if(c.x==null||(!c.big&&!c.vis))return;var d=Math.hypot(c.x-m[0],c.y-m[1]);if(d<bd){bd=d;id=c.id}});
     }
     if(id&&byId[id]){select(id,false);toggle(id)}
   }
-  if(!pts().length){tapId=null}
+  if(!pts().length)tapId=null;
 }
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
 
-/* ---------- Copias de seguridad ---------- */
-function saveBackup(obj,name){
-  var text=JSON.stringify(obj,null,2),mobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  try{ // en móvil: menú de compartir → «Guardar en Archivos» pregunta si reemplazar el archivo anterior
-    var file=new File([text],name,{type:'application/json'});
-    if(mobile&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file]}).catch(function(){});return}
-  }catch(e){}
-  var blob=new Blob([text],{type:'application/json'}),a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download=name;
-  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
-}
-$('exp').onclick=function(){
-  var out={app:'mis-provincias-visitadas',version:2,exportado:new Date().toISOString(),provincias:{},ciudades:{}};
-  Object.keys(data).forEach(function(id){
-    var r=data[id],f=byId[id];if(!f||!(r.v||r.y||r.n))return;
-    var o={visitada:!!r.v,anio:r.y||'',notas:r.n||'',nombre:f.name};
-    if(f.city){o.provincia=f.pname;out.ciudades[id]=o}else out.provincias[id]=o;
-  });
-  saveBackup(out,'mis-provincias.json');
-};
+/* ---------- Copia de seguridad (archivo único, común a todas las pantallas) ---------- */
+$('exp').onclick=function(){V.guardar()};
 $('imp').onclick=function(){$('file').click()};
-function parseSection(sec,city,nd){
-  var n=0;
-  Object.keys(sec).forEach(function(id){
-    var f=byId[id]||byId[byOld[id]];if(!f||!!f.city!==city)return;var p=sec[id],id=f.id;
-    var r={v:p.visitada?1:0,y:String(p.anio||'').replace(/\D/g,'').slice(0,4),n:String(p.notas||'').slice(0,2000)};
-    if(r.v||r.y||r.n){nd[id]=r;if(r.v)n++}
-  });
-  return n;
-}
-$('file').onchange=function(){
-  var f=this.files[0];this.value='';if(!f)return;
-  var rd=new FileReader();
-  rd.onload=function(){
-    try{
-      var j=JSON.parse(rd.result);
-      if(!j||j.app!=='mis-provincias-visitadas'||typeof j.provincias!=='object')throw 0;
-      var nd={},np=parseSection(j.provincias,false,nd),nc=0,hasC=j.ciudades&&typeof j.ciudades==='object';
-      if(hasC)nc=parseSection(j.ciudades,true,nd);
-      else Object.keys(data).forEach(function(id){if(byId[id]&&byId[id].city)nd[id]=data[id]}); // copia antigua: se conservan las ciudades actuales
-      if(!confirm('Se reemplazará tu lista actual por la copia ('+np+' provincias'+(hasC?' y '+nc+' ciudades':'')+' visitadas). ¿Continuar?'))return;
-      data=nd;save();Object.keys(rows).forEach(refresh);
-    }catch(e){alert('El archivo no es una copia válida de esta aplicación.')}
-  };
-  rd.readAsText(f);
-};
+$('file').onchange=function(){var f=this.files[0];this.value='';if(f)V.importar(f)};
 $('rst').onclick=function(){
-  if(!confirm('¿Desmarcar todas las provincias y ciudades y borrar años y notas? Esta acción no se puede deshacer.'))return;
-  data={};save();Object.keys(rows).forEach(refresh);
+  if(!confirm('¿Desmarcar todo lo de '+UD.pais+' (provincias y ciudades) y borrar años y notas? Esta acción no se puede deshacer. Las demás pantallas no cambian.'))return;
+  Object.keys(data).forEach(function(k){delete data[k]});V.save();location.reload();
 };
 
 /* ---------- Arranque ---------- */
 function getJSON(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
-load();
-var P=getJSON('provincias.geojson').then(function(gj){drawMap(gj);return true}).catch(function(){$('msg').style.display='block';return false});
-var C=getJSON('ciudades.json').then(function(j){return j.ciudades||[]}).catch(function(){return []});
+V.nav(CC);
+var P=getJSON('datos/'+CC+'/unidades.json').then(function(ud){UD=ud;return true}).catch(function(){return false});
+var C=getJSON('datos/'+CC+'/ciudades.json').then(function(j){return j.ciudades||[]}).catch(function(){return []});
 Promise.all([P,C]).then(function(res){
-  if(!feats.length){
-    var N='Álava,Albacete,Alicante,Almería,Ávila,Badajoz,Illes Balears,Barcelona,Burgos,Cáceres,Cádiz,Castellón,Ciudad Real,Córdoba,A Coruña,Cuenca,Girona,Granada,Guadalajara,Gipuzkoa,Huelva,Huesca,Jaén,León,Lleida,La Rioja,Lugo,Madrid,Málaga,Murcia,Navarra,Ourense,Asturias,Palencia,Las Palmas,Pontevedra,Salamanca,Santa Cruz de Tenerife,Cantabria,Segovia,Sevilla,Soria,Tarragona,Teruel,Toledo,Valencia,Valladolid,Bizkaia,Zamora,Zaragoza'.split(',');
-    feats=N.map(function(n,i){return{id:(i<9?'0':'')+(i+1),name:n}});
-    feats.forEach(function(f){byId[f.id]=f});
-  }
-  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,lon:c.lon,lat:c.lat,big:!!c.big,old:c.old,city:true}});
+  if(!UD){$('title').textContent='No se pudieron cargar los datos';$('msg').style.display='block';return}
+  document.title=UD.flag+' '+UD.pais+' · Mis lugares visitados';
+  $('title').textContent=UD.flag+' '+UD.pais;$('l1').textContent=UD.tab;$('tabp').textContent=UD.tab;$('dname').textContent='Toca una '+UD.unidad1+' o ciudad';
+  $('foot').textContent='Los datos se guardan solo en este navegador. Si borras los datos del sitio o cambias de dispositivo, se pierden: usa «Guardar» (un archivo con todo) e «Importar copia». '+FUENTES[CC];
+  $('cnote').textContent=NOTAS[CC];
+  feats=UD.items.map(function(i){return{id:i.id,name:i.n}});feats.forEach(function(f){byId[f.id]=f});
+  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,x:c.x,y:c.y,big:!!c.big,old:c.old,city:true}});
   var moved=false;
-  cities.forEach(function(c){byId[c.id]=c;
+  cities.forEach(function(c){byId[c.id]=c;(citiesOf[c.p]=citiesOf[c.p]||[]).push(c);
     if(c.old){byOld[c.old]=c.id;if(data[c.old]&&!data[c.id]){data[c.id]=data[c.old];delete data[c.old];moved=true}}}); // ids antiguos (c_<nombre>) → código INE
-  if(moved)save();
-  drawDots();
+  if(moved)V.save();
+  drawMap(UD);drawDots();
   if(citiesG&&!$('showc').checked)citiesG.style.display='none';
   buildList();buildCities();
-  Object.keys(rows).forEach(function(id){refresh(id)});stats();setMode('p');
+  Object.keys(rows).forEach(function(id){refresh(id,true)});stats();setMode('p');
 });
 })();
 </script>
