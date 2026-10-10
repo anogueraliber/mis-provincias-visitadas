@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mapa mundial · Mis países visitados</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Registro personal de países y territorios del mundo visitados. Sin cuenta, sin GPS, sin anuncios.">
+<meta name="theme-color" content="#12296b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Provincias">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{
+  --bg:#f4f5f7;--card:#fff;--text:#1d2330;--muted:#667085;--line:#e1e4ea;--sea:#fff;--land:#e9e4e1;--stroke:#fff;
+  --ido:#12296b;--quiero:#7096ec;--vivo:#f5d742;--vivida:#f0ab30;--sel:#e8203c;--danger:#c0392b;--dotline:#667085;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#10141b;--card:#1a2029;--text:#e8ebf0;--muted:#98a2b3;--line:#2b3340;--sea:#141a23;--land:#39404c;--stroke:#141a23;
+    --ido:#4f7bff;--quiero:#3e5fa8;--vivo:#e0c22e;--vivida:#d99425;--dotline:#98a2b3}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+main{max-width:1100px;margin:0 auto;padding:12px 16px 32px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 12px}
+h1{font-size:1.4rem;margin:0}
+a.btn,button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:9px 14px;cursor:pointer;min-height:40px;text-decoration:none;display:inline-flex;align-items:center}
+button:active,a.btn:active{opacity:.7}
+button.danger{color:var(--danger);border-color:var(--danger)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.stats small{flex-basis:100%;color:var(--muted);font-size:.85rem}
+.stats b{font-size:1.9rem;color:var(--ido)}
+.stats span{color:var(--muted)}
+.bar{height:10px;background:var(--land);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:var(--ido);transition:width .25s}
+.chips{display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:12px;font-size:.9rem;color:var(--muted)}
+.chips span::before,.legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.layout{display:grid;gap:14px;margin-top:14px}
+@media (min-width:860px){.layout{grid-template-columns:1.6fr 1fr;align-items:start}}
+#mapwrap{position:relative;padding:0;overflow:hidden}
+#map{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;background:var(--sea)}
+#map path{fill:var(--land);stroke:var(--stroke);stroke-width:.6;vector-effect:non-scaling-stroke;stroke-linejoin:round;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#map path.s-v{fill:var(--ido)}#map path.s-w{fill:var(--quiero)}#map path.s-l{fill:var(--vivo)}#map path.s-p{fill:var(--vivida)}
+#map path.sel{stroke:var(--sel);stroke-width:2.2}
+#map .dot{fill:var(--land);stroke:var(--dotline);stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none}
+#map .dot.s-v{fill:var(--ido)}#map .dot.s-w{fill:var(--quiero)}#map .dot.s-l{fill:var(--vivo)}#map .dot.s-p{fill:var(--vivida)}
+#map .dot.sel{stroke:var(--sel);stroke-width:2.6}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:40px;height:40px;font-size:1.4rem;padding:0;justify-content:center}
+.sheet{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.sheet[hidden]{display:none}
+.sheet .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.sheet .top b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet .top button{padding:2px 10px;min-height:30px}
+.sheet .btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sheet .btns button{padding:6px 2px;min-height:38px;justify-content:center;font-size:.9rem}
+.sheet .btns button[aria-pressed=true]{color:#fff;border-color:transparent;background:var(--c)}
+.sheet .btns button[data-s=l][aria-pressed=true],.sheet .btns button[data-s=p][aria-pressed=true]{color:#1d2330}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin:8px 4px 0;align-items:center}
+.legend label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.legend span.ldot::before{border-radius:50%}
+#msg{color:var(--danger);margin:8px 4px 0;display:none}
+label.f{display:block;margin-top:10px;font-size:.9rem;color:var(--muted)}
+input[type=number],input[type=search],textarea,select{width:100%;font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin-top:4px}
+textarea{min-height:80px;resize:vertical}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.filters{display:flex;gap:8px;margin-top:10px}
+.filters select{margin:0}
+#list{list-style:none;margin:10px 0 0;padding:0;max-height:460px;overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px}
+#list li{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+#list li:last-child{border-bottom:0}
+#list li.grp{background:var(--bg);color:var(--muted);font-size:.8rem;font-weight:600;padding:6px 12px;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0;z-index:1}
+#list li.sel{background:color-mix(in srgb,var(--sel) 12%,transparent)}
+#list label{flex:1;display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;min-height:44px}
+#list input{width:22px;height:22px;accent-color:var(--ido);flex:none}
+#list small{color:var(--muted)}
+#list .info{border:0;background:none;color:var(--muted);padding:6px 14px;min-height:44px}
+#empty{display:none;color:var(--muted);padding:12px}
+footer{color:var(--muted);font-size:.85rem;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Mapa mundial</h1>
+    <a class="btn" href="./">← Provincias de España</a>
+  </header>
+
+  <section class="card" aria-live="polite">
+    <div class="statgrid">
+      <div><div class="stats"><small>Países y estados</small><b id="cp">0/0</b><span id="pp">0 %</span></div><div class="bar"><i id="bp"></i></div></div>
+      <div><div class="stats"><small>Territorios</small><b id="ct">0/0</b><span id="pt">0 %</span></div><div class="bar"><i id="bt"></i></div></div>
+    </div>
+    <div class="chips">
+      <span style="--c:var(--ido)">Has ido: <b id="n-v">0</b></span>
+      <span style="--c:var(--quiero)">Quiero ir: <b id="n-w">0</b></span>
+      <span style="--c:var(--vivo)">Vivo: <b id="n-l">0</b></span>
+      <span style="--c:var(--vivida)">Vivida: <b id="n-p">0</b></span>
+    </div>
+  </section>
+
+  <div class="layout">
+    <div>
+      <section class="card" id="mapwrap">
+        <svg id="map" viewBox="0 0 360 264" role="img" aria-label="Mapa del mundo"></svg>
+        <div class="zoom">
+          <button id="zin" aria-label="Acercar">+</button>
+          <button id="zout" aria-label="Alejar">−</button>
+          <button id="zreset" aria-label="Restablecer vista" style="font-size:1rem">⟲</button>
+        </div>
+      </section>
+      <div class="sheet" id="sheet" hidden>
+        <div class="top"><b id="sname"></b><button id="sclose" aria-label="Cerrar">✕</button></div>
+        <div class="btns" id="sbtns">
+          <button data-s="v" style="--c:var(--ido)">Has ido</button><button data-s="w" style="--c:var(--quiero)">Quiero</button>
+          <button data-s="l" style="--c:var(--vivo)">Vivo</button><button data-s="p" style="--c:var(--vivida)">Vivida</button>
+        </div>
+        <p id="dsub" style="margin:6px 0 0;color:var(--muted);font-size:.85rem"></p>
+        <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--muted)">Año y notas (opcional)</summary>
+          <label class="f">Año de la primera visita
+            <input type="number" id="dyear" inputmode="numeric" min="1900" placeholder="Ej. 2005"></label>
+          <label class="f">Notas
+            <textarea id="dnote" maxlength="2000"></textarea></label>
+        </details>
+      </div>
+      <div class="legend">
+        <span style="--c:var(--ido)">Has ido</span><span style="--c:var(--quiero)">Quiero ir</span>
+        <span style="--c:var(--vivo)">Vivo</span><span style="--c:var(--vivida)">Vivida</span>
+        <span style="--c:var(--land)">Sin marcar</span>
+      </div>
+      <p id="msg">No se pudo cargar el mapa. Puedes seguir usando la lista.</p>
+    </div>
+
+    <div>
+      <section class="card" style="margin-top:14px">
+        <input type="search" id="q" placeholder="Buscar país o territorio…" autocomplete="off" aria-label="Buscar">
+        <div class="filters">
+          <select id="flt" aria-label="Filtrar">
+            <option value="all">Todos</option><option value="v">Has ido</option><option value="w">Quiero ir</option>
+            <option value="l">Vivo</option><option value="p">Vivida</option><option value="n">Sin marcar</option>
+          </select>
+          <select id="kind" aria-label="Tipo">
+            <option value="all">Todos los tipos</option><option value="p">Solo países</option><option value="t">Solo territorios</option>
+          </select>
+        </div>
+        <ul id="list"></ul>
+        <div id="empty">Sin resultados.</div>
+        <div class="tools">
+          <button id="exp">Exportar copia</button>
+          <button id="imp">Importar copia</button>
+          <button id="rst" class="danger">Reiniciar</button>
+        </div>
+        <input type="file" id="file" accept="application/json,.json" hidden>
+      </section>
+    </div>
+  </div>
+
+  <footer>«Has ido» incluye también los lugares donde vives o has vivido. Los datos se guardan solo en este navegador y no se mezclan con los de las provincias: usa «Exportar copia» e «Importar copia» para guardarlos o pasarlos a otro dispositivo. Fronteras: Natural Earth (dominio público); en zonas disputadas se muestra una de las representaciones habituales, sin valor político. Se incluyen países, estados no plenamente reconocidos y territorios dependientes.</footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+var KEY='misPaisesVisitados.v1',NS='http://www.w3.org/2000/svg';
+var ORDER=['Europa','Asia','África','América del Norte','América del Sur','Oceanía','Antártida','Océanos e islas remotas'];
+var LABEL={v:'Has ido',w:'Quiero ir',l:'Vivo',p:'Vivida'};
+var data={},items=[],byId={},paths={},dots={},rows={},groups=[],landG=null,dotG=null,sel=null,svg=$('map'),base,view;
+
+function $(id){return document.getElementById(id)}
+function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object')data=r}catch(e){data={}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+function st(id){return (data[id]&&data[id].s)||''}
+function rec(id){return data[id]||(data[id]={s:'',y:'',n:''})}
+function clean(id){var r=data[id];if(r&&!r.s&&!r.y&&!r.n)delete data[id]}
+function been(id){var s=st(id);return s==='v'||s==='l'||s==='p'}
+
+/* ---------- Estadísticas ---------- */
+function stats(){
+  [['p','cp','pp','bp'],['t','ct','pt','bt']].forEach(function(k){
+    var l=items.filter(function(i){return i.t===k[0]}),n=l.filter(function(i){return been(i.id)}).length,t=l.length,pc=t?Math.round(n*100/t):0;
+    $(k[1]).textContent=n+'/'+t;$(k[2]).textContent=pc+' %';$(k[3]).style.width=pc+'%';
+  });
+  ['v','w','l','p'].forEach(function(s){$('n-'+s).textContent=items.filter(function(i){return st(i.id)===s}).length});
+}
+
+/* ---------- Estado de cada elemento ---------- */
+function paint(el,s){if(!el)return;el.setAttribute('class',el.getAttribute('class').replace(/ ?s-\w/g,'')+(s?' s-'+s:''))}
+function refresh(id){
+  var s=st(id);paint(paths[id],s);paint(dots[id],s);
+  if(rows[id]){
+    rows[id].cb.checked=been(id);
+    var r=data[id]||{};rows[id].sm.textContent=[LABEL[s]&&s!=='v'?LABEL[s]:'',r.y||'',r.n?'📝':''].filter(Boolean).join(' · ');
+  }
+  stats();applyFilter();if(sel===id)drawDetail();
+}
+function setS(id,s){rec(id).s=s;clean(id);save();refresh(id)}
+function mark(id,on){
+  var el=paths[id]||dots[id];if(on&&paths[id])landG.appendChild(paths[id]);
+  [paths[id],dots[id]].forEach(function(e){if(e)e.classList.toggle('sel',on)});
+}
+function select(id,center){
+  var old=sel;sel=id;
+  if(old){mark(old,false);if(rows[old])rows[old].li.classList.remove('sel')}
+  mark(id,true);if(rows[id])rows[id].li.classList.add('sel');
+  drawDetail();
+  if(center){centerOn(id);$('mapwrap').scrollIntoView({behavior:'smooth',block:'start'})}
+}
+function drawDetail(){
+  if(!sel)return;var f=byId[sel],r=data[sel]||{};
+  $('sname').textContent=f.n;$('sheet').hidden=false;
+  $('dsub').textContent=(f.t==='p'?'País o estado':'Territorio')+' · '+f.c;
+  var s=st(sel);[].forEach.call($('sbtns').children,function(b){b.setAttribute('aria-pressed',b.dataset.s===s)});
+  if(document.activeElement!==$('dyear'))$('dyear').value=r.y||'';
+  if(document.activeElement!==$('dnote'))$('dnote').value=r.n||'';
+}
+$('sbtns').onclick=function(e){var b=e.target.closest('button');if(b&&sel)setS(sel,st(sel)===b.dataset.s?'':b.dataset.s)};
+$('sclose').onclick=function(){$('sheet').hidden=true};
+$('dyear').oninput=function(){if(!sel)return;rec(sel).y=this.value.replace(/\D/g,'').slice(0,4);clean(sel);save();refresh(sel)};
+$('dnote').oninput=function(){if(!sel)return;rec(sel).n=this.value;clean(sel);save();refresh(sel)};
+
+/* ---------- Lista ---------- */
+function buildList(){
+  var ul=$('list');ul.textContent='';groups=[];
+  ORDER.forEach(function(c){
+    var l=items.filter(function(i){return i.c===c});if(!l.length)return;
+    var h=document.createElement('li');h.className='grp';h.textContent=c;ul.appendChild(h);var g={li:h,ids:[]};groups.push(g);
+    l.forEach(function(f){
+      var li=document.createElement('li'),lb=document.createElement('label'),cb=document.createElement('input'),
+          nm=document.createElement('span'),sm=document.createElement('small'),inf=document.createElement('button');
+      cb.type='checkbox';nm.textContent=f.n;inf.className='info';inf.textContent='Detalles';inf.setAttribute('aria-label','Estado, año y notas de '+f.n);
+      cb.setAttribute('aria-label','Has ido a '+f.n);
+      lb.appendChild(cb);lb.appendChild(nm);lb.appendChild(sm);li.appendChild(lb);li.appendChild(inf);ul.appendChild(li);
+      cb.onchange=function(){setS(f.id,cb.checked?'v':'');select(f.id,false)};
+      inf.onclick=function(){select(f.id,true)};
+      rows[f.id]={li:li,cb:cb,sm:sm,key:norm(f.n)};g.ids.push(f.id);
+    });
+  });
+}
+function applyFilter(){
+  var q=norm($('q').value.trim()),m=$('flt').value,k=$('kind').value,shown=0;
+  Object.keys(rows).forEach(function(id){
+    var s=st(id),ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='n'?!s:s===m))&&(k==='all'||byId[id].t===k);
+    rows[id].li.style.display=ok?'':'none';if(ok)shown++;
+  });
+  groups.forEach(function(g){g.li.style.display=g.ids.some(function(id){return rows[id].li.style.display!=='none'})?'':'none'});
+  $('empty').style.display=shown?'none':'block';
+}
+$('q').oninput=applyFilter;$('flt').onchange=applyFilter;$('kind').onchange=applyFilter;
+
+/* ---------- Mapa ---------- */
+function draw(j){
+  items=j.items;items.forEach(function(i){byId[i.id]=i});
+  var b=j.box;base={x:b[0],y:-b[3],w:b[2]-b[0],h:b[3]-b[1]};
+  landG=document.createElementNS(NS,'g');dotG=document.createElementNS(NS,'g');svg.appendChild(landG);svg.appendChild(dotG);
+  // Los datos vienen proyectados con y hacia arriba: se invierte con una transformación
+  var tr='scale(1,-1)';landG.setAttribute('transform',tr);
+  items.forEach(function(i){
+    var el=document.createElementNS(NS,'path'),t=document.createElementNS(NS,'title');
+    el.setAttribute('d',i.d);el.setAttribute('fill-rule','evenodd');el.setAttribute('class','');el.dataset.id=i.id;t.textContent=i.n;el.appendChild(t);
+    landG.appendChild(el);paths[i.id]=el;
+    if(i.tiny){var c=document.createElementNS(NS,'circle'),t2=document.createElementNS(NS,'title');
+      c.setAttribute('class','dot');c.setAttribute('cx',i.x);c.setAttribute('cy',-i.y);t2.textContent=i.n;c.appendChild(t2);dotG.appendChild(c);dots[i.id]=c}
+  });
+  svg.style.aspectRatio=(base.w/base.h).toFixed(3);
+  view=Object.assign({},base);setView();
+}
+function sizeDots(){
+  if(!view)return;var u=view.w/(svg.clientWidth||320);
+  items.forEach(function(i){if(dots[i.id])dots[i.id].setAttribute('r',(3.4*u).toFixed(4))});
+}
+function setView(){svg.setAttribute('viewBox',view.x+' '+view.y+' '+view.w+' '+view.h);sizeDots()}
+function zoomAt(k,cx,cy){
+  var w=Math.min(base.w,Math.max(base.w/60,view.w/k)),h=w*base.h/base.w;
+  view.x=cx-(cx-view.x)*w/view.w;view.y=cy-(cy-view.y)*h/view.h;view.w=w;view.h=h;clampView();setView();
+}
+function clampView(){
+  view.x=Math.min(base.x+base.w-view.w,Math.max(base.x,view.x));view.y=Math.min(base.y+base.h-view.h,Math.max(base.y,view.y));
+  if(view.w>=base.w){view.x=base.x;view.y=base.y}
+}
+function centerOn(id){
+  var f=byId[id];if(!f)return;var w=base.w/(f.tiny?25:8),h=w*base.h/base.w;
+  view.w=w;view.h=h;view.x=f.x-w/2;view.y=-f.y-h/2;clampView();setView();
+}
+function toMap(px,py){var r=svg.getBoundingClientRect();return[view.x+(px-r.left)/r.width*view.w,view.y+(py-r.top)/r.height*view.h]}
+$('zin').onclick=function(){zoomAt(1.7,view.x+view.w/2,view.y+view.h/2)};
+$('zout').onclick=function(){zoomAt(1/1.7,view.x+view.w/2,view.y+view.h/2)};
+$('zreset').onclick=function(){view=Object.assign({},base);setView()};
+svg.addEventListener('wheel',function(e){e.preventDefault();var c=toMap(e.clientX,e.clientY);zoomAt(e.deltaY<0?1.25:1/1.25,c[0],c[1])},{passive:false});
+window.addEventListener('resize',sizeDots);
+
+var ptrs={},tapId=null,moved=false,startD=0,lastC=null;
+function pts(){return Object.keys(ptrs).map(function(k){return ptrs[k]})}
+svg.addEventListener('pointerdown',function(e){
+  ptrs[e.pointerId]={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY};var n=pts().length;
+  if(n===1){moved=false;tapId=e.target.dataset?e.target.dataset.id:null}
+  if(n===2){moved=true;tapId=null;var p=pts();startD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)}
+  lastC={x:e.clientX,y:e.clientY};
+});
+svg.addEventListener('pointermove',function(e){
+  var p=ptrs[e.pointerId];if(!p)return;var all=pts(),r=svg.getBoundingClientRect();p.x=e.clientX;p.y=e.clientY;
+  if(all.length===2){
+    var d=Math.hypot(all[0].x-all[1].x,all[0].y-all[1].y);
+    if(startD>0){var c=toMap((all[0].x+all[1].x)/2,(all[0].y+all[1].y)/2);zoomAt(d/startD,c[0],c[1])}
+    startD=d;return;
+  }
+  if(Math.hypot(e.clientX-p.sx,e.clientY-p.sy)>6)moved=true;
+  if(moved&&all.length===1){view.x-=(e.clientX-lastC.x)/r.width*view.w;view.y-=(e.clientY-lastC.y)/r.height*view.h;clampView();setView()}
+  lastC={x:e.clientX,y:e.clientY};
+});
+function up(e){
+  if(!ptrs[e.pointerId])return;delete ptrs[e.pointerId];
+  if(!pts().length&&!moved&&e.type==='pointerup'){
+    var id=tapId,m=toMap(e.clientX,e.clientY),u=view.w/svg.clientWidth,bd=14*u;
+    items.forEach(function(i){if(!i.tiny)return;var d=Math.hypot(i.x-m[0],-i.y-m[1]);if(d<bd){bd=d;id=i.id}}); // gana el punto diminuto más cercano
+    if(id&&byId[id]){select(id,false)}
+  }
+  if(!pts().length)tapId=null;
+}
+svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+
+/* ---------- Copias de seguridad ---------- */
+var NAMES={v:'ido',w:'quiero',l:'vivo',p:'vivida'},CODES={ido:'v',quiero:'w',vivo:'l',vivida:'p'};
+$('exp').onclick=function(){
+  var out={app:'mis-paises-visitados',version:1,exportado:new Date().toISOString(),paises:{}};
+  Object.keys(data).forEach(function(id){var r=data[id],f=byId[id];if(!f||!(r.s||r.y||r.n))return;
+    out.paises[id]={estado:NAMES[r.s]||'',anio:r.y||'',notas:r.n||'',nombre:f.n}});
+  var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='mis-paises-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+};
+$('imp').onclick=function(){$('file').click()};
+$('file').onchange=function(){
+  var f=this.files[0];this.value='';if(!f)return;var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var j=JSON.parse(rd.result);if(!j||j.app!=='mis-paises-visitados'||typeof j.paises!=='object')throw 0;
+      var nd={},n=0;
+      Object.keys(j.paises).forEach(function(id){
+        if(!byId[id])return;var p=j.paises[id];
+        var r={s:CODES[p.estado]||'',y:String(p.anio||'').replace(/\D/g,'').slice(0,4),n:String(p.notas||'').slice(0,2000)};
+        if(r.s||r.y||r.n){nd[id]=r;n++}
+      });
+      if(!confirm('Se reemplazará tu lista actual por la copia ('+n+' países o territorios marcados). ¿Continuar?'))return;
+      data=nd;save();Object.keys(rows).forEach(refresh);
+    }catch(e){alert('El archivo no es una copia válida de esta aplicación.')}
+  };
+  rd.readAsText(f);
+};
+$('rst').onclick=function(){
+  if(!confirm('¿Quitar todas las marcas y borrar años y notas? Esta acción no se puede deshacer.'))return;
+  data={};save();Object.keys(rows).forEach(refresh);
+};
+
+/* ---------- Arranque ---------- */
+load();
+fetch('mundo.json').then(function(r){if(!r.ok)throw 0;return r.json()}).then(draw).catch(function(){$('msg').style.display='block'}).then(function(){
+  if(items.length){buildList();Object.keys(rows).forEach(refresh);stats();applyFilter()}
+});
+})();
+</script>
+</body>
+</html>
