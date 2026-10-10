@@ -9,10 +9,10 @@ Aplicación web estática (HTML + GeoJSON local, sin dependencias externas) para
 4. iPhone: abrir en Safari → Compartir → **Añadir a pantalla de inicio**.
 
 ## Mapa mundial (`mundo.html`)
-Segunda pantalla, enlazada desde la principal («🌍 Mapa mundial»). Estilo Visited: cada país o territorio puede estar en **Has ido**, **Quiero ir**, **Vivo** o **Vivida**, con año y notas opcionales.
+Segunda pantalla, enlazada desde la principal («🌍 Mapa mundial»). Estilo Visited: cada país o territorio puede estar en **Has ido** o **Quiero ir**, con año y notas opcionales.
 - 201 países y estados (incluye Kosovo, Taiwán, Palestina, Sahara Occidental, Somalilandia y Chipre del Norte) y 57 territorios dependientes (Puerto Rico, Groenlandia…, ver `mundo.json`).
 - Los diminutos (Mónaco, Vaticano, islas…) salen como puntos tocables. Zoom y desplazamiento como en el mapa de España.
-- «Has ido» cuenta también Vivo y Vivida. Datos en un almacenamiento aparte (`misPaisesVisitados.v1`) y copia JSON propia.
+- Datos en un almacenamiento aparte (`misPaisesVisitados.v1`) y copia JSON propia.
 - Fronteras de Natural Earth 1:10m (dominio público), regeneradas con `tools/build_mundo.py`. Las zonas disputadas se muestran con una de las representaciones habituales, sin valor político.
 
 ## Uso

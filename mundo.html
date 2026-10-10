@@ -14,11 +14,11 @@
 <style>
 :root{
   --bg:#f4f5f7;--card:#fff;--text:#1d2330;--muted:#667085;--line:#e1e4ea;--sea:#fff;--land:#e9e4e1;--stroke:#fff;
-  --ido:#12296b;--quiero:#7096ec;--vivo:#f5d742;--vivida:#f0ab30;--sel:#e8203c;--danger:#c0392b;--dotline:#667085;
+  --ido:#12296b;--quiero:#7096ec;--sel:#e8203c;--danger:#c0392b;--dotline:#667085;
 }
 @media (prefers-color-scheme:dark){
   :root{--bg:#10141b;--card:#1a2029;--text:#e8ebf0;--muted:#98a2b3;--line:#2b3340;--sea:#141a23;--land:#39404c;--stroke:#141a23;
-    --ido:#4f7bff;--quiero:#3e5fa8;--vivo:#e0c22e;--vivida:#d99425;--dotline:#98a2b3}
+    --ido:#4f7bff;--quiero:#3e5fa8;--dotline:#98a2b3}
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -45,10 +45,10 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 #mapwrap{position:relative;padding:0;overflow:hidden}
 #map{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;background:var(--sea)}
 #map path{fill:var(--land);stroke:var(--stroke);stroke-width:.6;vector-effect:non-scaling-stroke;stroke-linejoin:round;cursor:pointer;-webkit-tap-highlight-color:transparent}
-#map path.s-v{fill:var(--ido)}#map path.s-w{fill:var(--quiero)}#map path.s-l{fill:var(--vivo)}#map path.s-p{fill:var(--vivida)}
+#map path.s-v{fill:var(--ido)}#map path.s-w{fill:var(--quiero)}
 #map path.sel{stroke:var(--sel);stroke-width:2.2}
 #map .dot{fill:var(--land);stroke:var(--dotline);stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none}
-#map .dot.s-v{fill:var(--ido)}#map .dot.s-w{fill:var(--quiero)}#map .dot.s-l{fill:var(--vivo)}#map .dot.s-p{fill:var(--vivida)}
+#map .dot.s-v{fill:var(--ido)}#map .dot.s-w{fill:var(--quiero)}
 #map .dot.sel{stroke:var(--sel);stroke-width:2.6}
 .zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
 .zoom button{width:40px;height:40px;font-size:1.4rem;padding:0;justify-content:center}
@@ -57,10 +57,9 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .sheet .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .sheet .top b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sheet .top button{padding:2px 10px;min-height:30px}
-.sheet .btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sheet .btns{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .sheet .btns button{padding:6px 2px;min-height:38px;justify-content:center;font-size:.9rem}
 .sheet .btns button[aria-pressed=true]{color:#fff;border-color:transparent;background:var(--c)}
-.sheet .btns button[data-s=l][aria-pressed=true],.sheet .btns button[data-s=p][aria-pressed=true]{color:#1d2330}
 .legend{display:flex;gap:6px 16px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin:8px 4px 0;align-items:center}
 .legend label{display:flex;align-items:center;gap:6px;cursor:pointer}
 .legend span.ldot::before{border-radius:50%}
@@ -99,8 +98,6 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
     <div class="chips">
       <span style="--c:var(--ido)">Has ido: <b id="n-v">0</b></span>
       <span style="--c:var(--quiero)">Quiero ir: <b id="n-w">0</b></span>
-      <span style="--c:var(--vivo)">Vivo: <b id="n-l">0</b></span>
-      <span style="--c:var(--vivida)">Vivida: <b id="n-p">0</b></span>
     </div>
   </section>
 
@@ -117,8 +114,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
       <div class="sheet" id="sheet" hidden>
         <div class="top"><b id="sname"></b><button id="sclose" aria-label="Cerrar">✕</button></div>
         <div class="btns" id="sbtns">
-          <button data-s="v" style="--c:var(--ido)">Has ido</button><button data-s="w" style="--c:var(--quiero)">Quiero</button>
-          <button data-s="l" style="--c:var(--vivo)">Vivo</button><button data-s="p" style="--c:var(--vivida)">Vivida</button>
+          <button data-s="v" style="--c:var(--ido)">Has ido</button><button data-s="w" style="--c:var(--quiero)">Quiero ir</button>
         </div>
         <p id="dsub" style="margin:6px 0 0;color:var(--muted);font-size:.85rem"></p>
         <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--muted)">Año y notas (opcional)</summary>
@@ -130,7 +126,6 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
       </div>
       <div class="legend">
         <span style="--c:var(--ido)">Has ido</span><span style="--c:var(--quiero)">Quiero ir</span>
-        <span style="--c:var(--vivo)">Vivo</span><span style="--c:var(--vivida)">Vivida</span>
         <span style="--c:var(--land)">Sin marcar</span>
       </div>
       <p id="msg">No se pudo cargar el mapa. Puedes seguir usando la lista.</p>
@@ -142,7 +137,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
         <div class="filters">
           <select id="flt" aria-label="Filtrar">
             <option value="all">Todos</option><option value="v">Has ido</option><option value="w">Quiero ir</option>
-            <option value="l">Vivo</option><option value="p">Vivida</option><option value="n">Sin marcar</option>
+            <option value="n">Sin marcar</option>
           </select>
           <select id="kind" aria-label="Tipo">
             <option value="all">Todos los tipos</option><option value="p">Solo países</option><option value="t">Solo territorios</option>
@@ -160,7 +155,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
     </div>
   </div>
 
-  <footer>«Has ido» incluye también los lugares donde vives o has vivido. Los datos se guardan solo en este navegador y no se mezclan con los de las provincias: usa «Exportar copia» e «Importar copia» para guardarlos o pasarlos a otro dispositivo. Fronteras: Natural Earth (dominio público); en zonas disputadas se muestra una de las representaciones habituales, sin valor político. Se incluyen países, estados no plenamente reconocidos y territorios dependientes.</footer>
+  <footer>Los datos se guardan solo en este navegador y no se mezclan con los de las provincias: usa «Exportar copia» e «Importar copia» para guardarlos o pasarlos a otro dispositivo. Fronteras: Natural Earth (dominio público); en zonas disputadas se muestra una de las representaciones habituales, sin valor político. Se incluyen países, estados no plenamente reconocidos y territorios dependientes.</footer>
 </main>
 
 <script>
@@ -168,17 +163,19 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
 'use strict';
 var KEY='misPaisesVisitados.v1',NS='http://www.w3.org/2000/svg';
 var ORDER=['Europa','Asia','África','América del Norte','América del Sur','Oceanía','Antártida','Océanos e islas remotas'];
-var LABEL={v:'Has ido',w:'Quiero ir',l:'Vivo',p:'Vivida'};
+var LABEL={v:'Has ido',w:'Quiero ir'};
 var data={},items=[],byId={},paths={},dots={},rows={},groups=[],landG=null,dotG=null,sel=null,svg=$('map'),base,view;
 
 function $(id){return document.getElementById(id)}
-function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object')data=r}catch(e){data={}}}
+function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object')data=r}catch(e){data={}}
+  Object.keys(data).forEach(function(id){var r=data[id];if(r&&(r.s==='l'||r.s==='p'))r.s='v'}); // «Vivo/Vivida» retirados: pasan a «Has ido»
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
 function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
 function st(id){return (data[id]&&data[id].s)||''}
 function rec(id){return data[id]||(data[id]={s:'',y:'',n:''})}
 function clean(id){var r=data[id];if(r&&!r.s&&!r.y&&!r.n)delete data[id]}
-function been(id){var s=st(id);return s==='v'||s==='l'||s==='p'}
+function been(id){return st(id)==='v'}
 
 /* ---------- Estadísticas ---------- */
 function stats(){
@@ -186,7 +183,7 @@ function stats(){
     var l=items.filter(function(i){return i.t===k[0]}),n=l.filter(function(i){return been(i.id)}).length,t=l.length,pc=t?Math.round(n*100/t):0;
     $(k[1]).textContent=n+'/'+t;$(k[2]).textContent=pc+' %';$(k[3]).style.width=pc+'%';
   });
-  ['v','w','l','p'].forEach(function(s){$('n-'+s).textContent=items.filter(function(i){return st(i.id)===s}).length});
+  ['v','w'].forEach(function(s){$('n-'+s).textContent=items.filter(function(i){return st(i.id)===s}).length});
 }
 
 /* ---------- Estado de cada elemento ---------- */
@@ -325,7 +322,7 @@ function up(e){
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
 
 /* ---------- Copias de seguridad ---------- */
-var NAMES={v:'ido',w:'quiero',l:'vivo',p:'vivida'},CODES={ido:'v',quiero:'w',vivo:'l',vivida:'p'};
+var NAMES={v:'ido',w:'quiero'},CODES={ido:'v',quiero:'w',vivo:'v',vivida:'v'}; // copias antiguas con vivo/vivida se importan como «ido»
 function saveBackup(obj,name){
   var text=JSON.stringify(obj,null,2),mobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   try{ // en móvil: menú de compartir → «Guardar en Archivos» pregunta si reemplazar el archivo anterior
