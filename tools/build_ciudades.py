@@ -1,62 +1,69 @@
-"""Genera ciudades.json (PROVISIONAL, datos GeoNames) a partir de geonamescache y provincias.geojson.
-Uso: python tools/build_ciudades.py   (requiere: pip install geonamescache)
-Pendiente: sustituir la población por el padrón oficial del INE (ver README)."""
-import json, math, re, unicodedata, geonamescache
+"""Genera ciudades.json (PROVISIONAL) con los municipios españoles de más de 20.000 habitantes.
+Fuentes: lista oficial de municipios con código INE y coordenadas (paquete npm `spanish-cities-info`, volcado a JSON)
+         + población de GeoNames (paquete `geonamescache`), cruzada por nombre y cercanía.
+Uso: python tools/build_ciudades.py <municipios_ine.json>      (requiere: pip install geonamescache)
+Pendiente: sustituir la población por el padrón vigente del INE (ver README e issue #1)."""
+import json, math, re, sys, unicodedata, geonamescache
 
-MIN_POP = 50000
-REVIEW = (45000, 57000)  # franja dudosa: la cifra GeoNames puede diferir del INE
-
-# Entradas de GeoNames que son barrios/distritos/núcleos y no municipios
-NOT_MUNICIPALITY = {
- 'Eixample','Latina','Carabanchel','Puente de Vallecas','Fuencarral','Sant Martí','Ciudad Lineal','Fuencarral-El Pardo',
- 'Sants-Montjuïc','Horta-Guinardó','Nou Barris','Hortaleza','San Blas-Canillejas','Tetuán de las Victorias','Madrid Centro',
- 'Arganzuela','Sarrià-Sant Gervasi','Chamberí','Sant Andreu','Usera','Chamartín','Villaverde','Retiro','Gràcia',
- 'Moncloa-Aravaca','Delicias','Moratalaz','Ciutat Vella','Centro','Algorta','Les Corts','Valdefuentes','Campiña','Aluche',
- 'Vicálvaro','Valverde','Villa de Vallecas','Pueblo Nuevo','Grao de Murviedro','Gamonal','Santutxu',"la Nova Esquerra de l'Eixample",
- 'Barri de Sant Andreu','Vallecas','Pinar del Rey','Sagrada Família','Las Águilas','la Vila de Gràcia','Ventas','Buenavista',
- 'Numancia','Vista Alegre','Sant Gervasi - Galvany','Barri de les Corts','Embajadores','el Raval','Pilar','San Diego',
-}
-# GeoNames 'Salamanca' aparece dos veces: el distrito de Madrid (admin1 29) y la ciudad (admin1 55)
+MIN_POP = 20000
+BIG = 50000
+REVIEW = (17000, 23000)      # franja dudosa alrededor del umbral
+MAX_KM = 25                  # distancia máx. entre el centroide del municipio y el punto de GeoNames (municipios extensos)
+# Nombre oficial → nombre que usa GeoNames para su núcleo principal, cuando difieren
+GN_ALIAS = {'Caravaca de la Cruz': 'Caravaca', 'Ribeira': 'Santa Uxía de Ribeira'}
 RENAME = {'Gasteiz / Vitoria':'Vitoria-Gasteiz','Donostia / San Sebastián':'San Sebastián','Palma':'Palma de Mallorca',
- 'Cadiz':'Cádiz','La Laguna':'San Cristóbal de La Laguna','Santa Lucía':'Santa Lucía de Tirajana','Arganda':'Arganda del Rey',
- 'San Vicent del Raspeig':'San Vicente del Raspeig'}
+          'Cadiz':'Cádiz','La Laguna':'San Cristóbal de La Laguna','Santa Lucía':'Santa Lucía de Tirajana','Arganda':'Arganda del Rey',
+          'San Vicent del Raspeig':'San Vicente del Raspeig'}
 
-def slug(s):
+# Nombre de GeoNames (núcleo principal) → nombre del municipio, cuando son distintos
+DISPLAY = {'Sama': 'Langreo', 'Caravaca': 'Caravaca de la Cruz', 'Santa Uxía de Ribeira': 'Ribeira'}
+
+def norm(s):
     s = unicodedata.normalize('NFD', s.lower()); s = ''.join(c for c in s if not unicodedata.combining(c))
-    return 'c_' + re.sub(r'[^a-z0-9]+', '_', s).strip('_')
+    s = re.sub(r"^(el|la|los|las|l'|els|les|a|o|os|as|sa|es|ses) ", '', s.replace("'", "' ").replace('-', ' ').strip()) if False else s
+    return re.sub(r'[^a-z0-9]+', ' ', s).strip()
+def km(a, b):
+    la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 12742 * math.asin(math.sqrt(h))
 
-prov = json.load(open('provincias.geojson', encoding='utf-8'))['features']
-def inside(pt, ring):
-    x, y = pt; ins = False; j = len(ring) - 1
-    for i in range(len(ring)):
-        xi, yi = ring[i]; xj, yj = ring[j]
-        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi) + xi: ins = not ins
-        j = i
-    return ins
-def province_of(lon, lat):
+munis = json.load(open(sys.argv[1], encoding='utf-8'))
+prov = {f['properties']['id']: f['properties']['name'] for f in json.load(open('provincias.geojson', encoding='utf-8'))['features']}
+prov.update({'51': 'Ceuta', '52': 'Melilla'})
+gn = [c for c in geonamescache.GeonamesCache().get_cities().values() if c['countrycode'] == 'ES']
+for c in gn: c['keys'] = {norm(c['name'])} | {norm(a) for a in c.get('alternatenames', []) if a}
+
+out = []; used = set()
+for m in munis:
     best = None
-    for f in prov:
-        for poly in f['geometry']['coordinates']:
-            if inside((lon, lat), poly[0]) and not any(inside((lon, lat), h) for h in poly[1:]):
-                return f['properties']['id'], f['properties']['name']
-            for x, y in poly[0]:
-                d = math.hypot((x - lon) * 0.766, y - lat)
-                if best is None or d < best[0]: best = (d, f['properties']['id'], f['properties']['name'])
-    return best[1], best[2]  # punto costero fuera del polígono simplificado: provincia más cercana
-
-out = []
-for c in geonamescache.GeonamesCache().get_cities().values():
-    if c['countrycode'] != 'ES' or c['population'] < REVIEW[0] or c['name'] in NOT_MUNICIPALITY: continue
-    if c['name'] == 'Salamanca' and c['admin1code'] == '29': continue
-    name = RENAME.get(c['name'], c['name'])
-    if c['name'] == 'Melilla': pid, pn = '52', 'Melilla'
-    elif c['name'] == 'Ceuta': pid, pn = '51', 'Ceuta'
-    else: pid, pn = province_of(c['longitude'], c['latitude'])
-    out.append({'id': slug(name), 'n': name, 'p': pid, 'pn': pn, 'pop': c['population'],
-                'lon': round(c['longitude'], 3), 'lat': round(c['latitude'], 3),
-                'rev': REVIEW[0] <= c['population'] < REVIEW[1], 'min': c['population'] >= MIN_POP})
-ids = [o['id'] for o in out]; assert len(ids) == len(set(ids)), 'ids duplicados'
-out.sort(key=lambda o: (o['pn'], o['n']))
-json.dump({'fuente': 'GeoNames (provisional, pendiente de revisar con padron INE)', 'ciudades': [o for o in out if o['min']] ,
-           'cercanas_al_limite': [o for o in out if o['rev']]}, open('ciudades.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-print(len([o for o in out if o['min']]), 'ciudades >=', MIN_POP, '|', len([o for o in out if o['rev']]), 'en franja de revision')
+    k = {norm(m['name'])} | ({norm(GN_ALIAS[m['name']])} if m['name'] in GN_ALIAS else set())
+    for c in gn:
+        if abs(c['latitude'] - m['latitude']) > 0.4 or abs(c['longitude'] - m['longitude']) > 0.5: continue
+        if not (k & c['keys']): continue
+        d = km((m['latitude'], m['longitude']), (c['latitude'], c['longitude']))
+        if d <= MAX_KM and (best is None or c['population'] > best['population']): best = c
+    if not best or best['population'] < REVIEW[0]: continue
+    used.add(best['geonameid'])
+    pid = m['ineCode'][:2]
+    name = DISPLAY.get(best['name']) or RENAME.get(best['name'], best['name'])
+    out.append({'id': 'c_' + m['ineCode'], 'n': name, 'off': m['name'], 'p': pid, 'pn': prov[pid], 'pop': best['population'],
+                'lon': round(best['longitude'], 3), 'lat': round(best['latitude'], 3), 'big': best['population'] >= BIG,
+                'rev': REVIEW[0] <= best['population'] < REVIEW[1]})
+# identificadores antiguos (c_<nombre>) → nuevos, para conservar marcas ya guardadas
+old = json.load(open('tools/ids_antiguos.json'))
+for oid, (lon, lat, p) in old.items():
+    cand = [(km((lat, lon), (c['lat'], c['lon'])), c) for c in out if c['p'] == p or oid in ('c_ceuta', 'c_melilla')]
+    if cand:
+        d, c = min(cand, key=lambda x: x[0])
+        if d < 15: c['old'] = oid
+        else: print('SIN ALIAS', oid, round(d, 1))
+sel = sorted((c for c in out if c['pop'] >= MIN_POP), key=lambda c: (c['pn'], c['n']))
+border = sorted((c for c in out if c['rev']), key=lambda c: c['pop'])
+ids = [c['id'] for c in sel]; assert len(ids) == len(set(ids))
+for c in sel + border: c.pop('off', None)
+json.dump({'fuente': 'INE (municipios, códigos y coordenadas) + GeoNames (población, provisional)', 'umbral': MIN_POP,
+           'ciudades': sel, 'cercanas_al_limite': border}, open('ciudades.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+print(len(sel), 'municipios >=', MIN_POP, '|', sum(1 for c in sel if c['big']), '>=', BIG, '|', len(border), 'en franja de revisión |', sum(1 for c in sel if c.get('old')), 'con alias antiguo')
+# diagnóstico: puntos GeoNames >= 20000 sin municipio asignado (posibles barrios o fallos de emparejado)
+sel_gid = used
+print('SIN EMPAREJAR:', '; '.join(f"{c['name']}({c['population']//1000}k)" for c in sorted(gn, key=lambda c: -c['population']) if c['population'] >= MIN_POP and c['geonameid'] not in sel_gid))

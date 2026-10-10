@@ -16,7 +16,7 @@ Segunda pantalla, enlazada desde la principal («🌍 Mapa mundial»). Estilo Vi
 - Fronteras de Natural Earth 1:10m (dominio público), regeneradas con `tools/build_mundo.py`. Las zonas disputadas se muestran con una de las representaciones habituales, sin valor político.
 
 ## Uso
-- Pestañas **Provincias / Ciudades** en la lista. Las ciudades salen como puntos sobre el mapa (se pueden ocultar con «Mostrar ciudades»); al tocar, gana el punto más cercano al dedo. Con zoom se separan las zonas densas.
+- Pestañas **Provincias / Ciudades** en la lista. Las ciudades salen como puntos sobre el mapa (se pueden ocultar con «Mostrar ciudades»). Las de más de 50.000 hab. se ven siempre; las de 20.000–50.000 aparecen al hacer zoom (o si las has marcado). Al tocar, gana el punto más cercano al dedo. En la lista de ciudades hay filtro por tamaño.
 - Tocar una provincia (o su casilla en la lista) la marca/desmarca. Año y notas: botón «Detalles» o tocar en el mapa.
 - Zoom: botones +/−, pellizco o rueda; arrastrar para mover.
 - Los datos viven en el `localStorage` del navegador: no se sincronizan ni sobreviven al borrado de datos del sitio. Usar **Exportar copia** / **Importar copia** (JSON). En el móvil, «Exportar» abre el menú de compartir: elige «Guardar en Archivos» y, si ya existe `mis-provincias.json`, pulsa «Reemplazar» (la web no puede borrar archivos por sí sola).
@@ -26,7 +26,9 @@ Editar los archivos de este repositorio y fusionar en `main`; el workflow vuelve
 `provincias.geojson` deriva de datos públicos de límites provinciales, simplificados (~110 KB). Las claves de datos son los códigos INE de provincia (`01`–`50`).
 
 ## Pendiente: revisar la lista de ciudades con datos oficiales
-`ciudades.json` es **provisional**: se generó con GeoNames (`tools/build_ciudades.py`), no con el padrón del INE.
-- Las cifras de población no son las oficiales; las ciudades de 45.000–57.000 hab. pueden sobrar o faltar (hay una lista en el campo `cercanas_al_limite` de `ciudades.json`).
-- Se descartaron a mano barrios y distritos que GeoNames trae como «ciudades» (Madrid, Barcelona…). Puede haber municipios de población dispersa que no aparezcan (p. ej. Siero, por confirmar).
-- Para corregirlo: obtener el padrón municipal vigente del INE (ine.es) con coordenadas (Wikidata o IGN) y regenerar el archivo. Los identificadores (`c_madrid`, …) se basan en el nombre para que las copias de seguridad existentes sigan valiendo.
+`ciudades.json` (388 municipios de más de 20.000 hab.; 145 de ellos superan los 50.000) es **provisional**. Se genera con `tools/build_ciudades.py`:
+la lista oficial de municipios (código INE y coordenadas, del paquete npm `spanish-cities-info`) cruzada por nombre y cercanía con la población de GeoNames.
+- La población **no es la del padrón del INE**. Los 134 municipios entre 17.000 y 23.000 hab. (`cercanas_al_limite`) pueden sobrar o faltar.
+- Faltan municipios de población dispersa, cuyo núcleo principal en GeoNames no llega a 15.000 hab. (por ejemplo, creo que Siero, Ames, Castrillón o Piélagos superan los 20.000 y no están). No se puede detectar sin el padrón.
+- Algunas coordenadas son las del núcleo urbano según GeoNames, no las del término municipal.
+- Para corregirlo: bajar el padrón vigente del INE (ine.es) y regenerar el archivo. Los identificadores son `c_<código INE>`; los antiguos (`c_madrid`, …) se convierten solos al abrir la app y al importar copias viejas.

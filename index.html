@@ -101,7 +101,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
     <div class="statgrid">
       <div><div class="stats"><small>Provincias</small><b id="count">0/50</b><span id="pct">0 %</span></div>
         <div class="bar"><i id="bar"></i></div></div>
-      <div><div class="stats c"><small>Ciudades &gt; 50.000 hab.</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div>
+      <div><div class="stats c"><small>Ciudades &gt; 20.000 hab.</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div>
         <div class="bar c"><i id="cbar"></i></div></div>
     </div>
   </section>
@@ -142,6 +142,9 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
         </div>
         <input type="search" id="q" placeholder="Buscar…" autocomplete="off" aria-label="Buscar">
         <div class="filters">
+          <select id="csize" aria-label="Tamaño de la ciudad" hidden>
+            <option value="all">Todos</option><option value="big">Más de 50.000</option><option value="small">20.000–50.000</option>
+          </select>
           <select id="flt" aria-label="Filtrar">
             <option value="all">Todas</option><option value="v">Visitadas</option><option value="p">Pendientes</option>
           </select>
@@ -149,7 +152,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
         <ul id="list"></ul>
         <ul id="clist" hidden></ul>
         <div id="empty">Sin resultados.</div>
-        <p class="note" id="cnote" hidden>Lista provisional (datos GeoNames, no oficiales): pendiente de revisar con el padrón del INE. Ceuta y Melilla cuentan aquí como ciudades.</p>
+        <p class="note" id="cnote" hidden>Lista provisional: municipios de más de 20.000 hab. (lista del INE con población de GeoNames, no oficial). Puede faltar alguno de población dispersa y sobrar o faltar los cercanos al límite; pendiente de revisar con el padrón del INE. Las de 20.000–50.000 aparecen en el mapa al hacer zoom. Ceuta y Melilla cuentan aquí como ciudades.</p>
         <div class="tools">
           <button id="exp">Exportar copia</button>
           <button id="imp">Importar copia</button>
@@ -167,7 +170,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
 (function(){
 'use strict';
 var KEY='misProvinciasVisitadas.v1', NS='http://www.w3.org/2000/svg';
-var data={}, feats=[], cities=[], byId={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
+var byOld={}, data={}, feats=[], cities=[], byId={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
 
 function $(id){return document.getElementById(id)}
 function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object')data=r}catch(e){data={}}}
@@ -195,7 +198,7 @@ function refresh(id){
     rows[id].cb.checked=v;var r=data[id]||{};
     rows[id].sm.textContent=[r.y||'',r.n?'📝':''].filter(Boolean).join(' ');
   }
-  stats();applyFilter();
+  stats();applyFilter();if(dots[id])updateMinor();
   if(sel===id)drawDetail();
 }
 function setV(id,v){rec(id).v=v?1:0;clean(id);save();refresh(id)}
@@ -209,7 +212,7 @@ function select(id,scroll){
   var old=sel;sel=id;
   if(old){mark(old,false);if(rows[old])rows[old].li.classList.remove('sel')}
   mark(id,true);if(rows[id])rows[id].li.classList.add('sel');
-  drawDetail();
+  drawDetail();updateMinor();
   if(scroll)$('detail').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function drawDetail(){
@@ -259,7 +262,8 @@ function applyFilter(){
   var q=norm($('q').value.trim()),m=$('flt').value,shown=0;
   Object.keys(rows).forEach(function(id){
     var inMode=!!byId[id].city===(mode==='c');
-    var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===isV(id));
+    var f=byId[id],sz=$('csize').value;
+    var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===isV(id))&&(!f.city||sz==='all'||(sz==='big')===f.big);
     rows[id].li.style.display=ok?'':'none';if(ok&&inMode)shown++;
   });
   groups.forEach(function(g){
@@ -269,13 +273,13 @@ function applyFilter(){
 }
 function setMode(m){
   mode=m;
-  $('list').hidden=m!=='p';$('clist').hidden=m!=='c';$('cnote').hidden=m!=='c';
+  $('csize').hidden=m!=='c';$('list').hidden=m!=='p';$('clist').hidden=m!=='c';$('cnote').hidden=m!=='c';
   $('tabp').setAttribute('aria-selected',m==='p');$('tabc').setAttribute('aria-selected',m==='c');
   $('q').placeholder=m==='p'?'Buscar provincia…':'Buscar ciudad o provincia…';
   applyFilter();
 }
 $('tabp').onclick=function(){setMode('p')};$('tabc').onclick=function(){setMode('c')};
-$('q').oninput=applyFilter;$('flt').onchange=applyFilter;
+$('q').oninput=applyFilter;$('flt').onchange=applyFilter;$('csize').onchange=applyFilter;
 
 /* ---------- Mapa ---------- */
 var svg=$('map'),base,view;
@@ -320,10 +324,15 @@ function drawDots(){
   });
   sizeDots();
 }
+function updateMinor(){
+  if(!citiesG||!view)return;var show=base.w/view.w>=2.2;
+  cities.forEach(function(c){var el=dots[c.id];if(!el||c.big)return;c.vis=show||isV(c.id)||sel===c.id;el.style.display=c.vis?'':'none'});
+}
 function sizeDots(){
   if(!citiesG||!view)return;
   var w=svg.clientWidth||320,u=view.w/w;
   cities.forEach(function(c){if(dots[c.id])dots[c.id].setAttribute('r',(3.2*u).toFixed(4))});
+  updateMinor();
 }
 function setView(){svg.setAttribute('viewBox',view.x+' '+view.y+' '+view.w+' '+view.h);sizeDots()}
 function zoomAt(k,cx,cy){
@@ -379,7 +388,7 @@ function up(e){
     var id=tapId;
     if(citiesG&&citiesG.style.display!=='none'){ // gana la ciudad más cercana al dedo (radio 14 px)
       var m=toMap(e.clientX,e.clientY),u=view.w/svg.clientWidth,bd=14*u;
-      cities.forEach(function(c){var d=Math.hypot(c.x-m[0],c.y-m[1]);if(d<bd){bd=d;id=c.id}});
+      cities.forEach(function(c){if(!c.big&&!c.vis)return;var d=Math.hypot(c.x-m[0],c.y-m[1]);if(d<bd){bd=d;id=c.id}});
     }
     if(id&&byId[id]){select(id,false);toggle(id)}
   }
@@ -411,7 +420,7 @@ $('imp').onclick=function(){$('file').click()};
 function parseSection(sec,city,nd){
   var n=0;
   Object.keys(sec).forEach(function(id){
-    var f=byId[id];if(!f||!!f.city!==city)return;var p=sec[id];
+    var f=byId[id]||byId[byOld[id]];if(!f||!!f.city!==city)return;var p=sec[id],id=f.id;
     var r={v:p.visitada?1:0,y:String(p.anio||'').replace(/\D/g,'').slice(0,4),n:String(p.notas||'').slice(0,2000)};
     if(r.v||r.y||r.n){nd[id]=r;if(r.v)n++}
   });
@@ -449,8 +458,11 @@ Promise.all([P,C]).then(function(res){
     feats=N.map(function(n,i){return{id:(i<9?'0':'')+(i+1),name:n}});
     feats.forEach(function(f){byId[f.id]=f});
   }
-  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,lon:c.lon,lat:c.lat,city:true}});
-  cities.forEach(function(c){byId[c.id]=c});
+  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,lon:c.lon,lat:c.lat,big:!!c.big,old:c.old,city:true}});
+  var moved=false;
+  cities.forEach(function(c){byId[c.id]=c;
+    if(c.old){byOld[c.old]=c.id;if(data[c.old]&&!data[c.id]){data[c.id]=data[c.old];delete data[c.old];moved=true}}}); // ids antiguos (c_<nombre>) → código INE
+  if(moved)save();
   drawDots();
   if(citiesG&&!$('showc').checked)citiesG.style.display='none';
   buildList();buildCities();
