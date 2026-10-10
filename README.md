@@ -1,6 +1,6 @@
 # Mis provincias visitadas
 
-Aplicación web estática (HTML + GeoJSON local, sin dependencias externas) para marcar las 50 provincias españolas visitadas. Sin cuenta, sin GPS, sin anuncios. Ceuta y Melilla no cuentan.
+Aplicación web estática (HTML + GeoJSON local, sin dependencias externas) para marcar las 50 provincias españolas visitadas y las ciudades de más de 50.000 habitantes. Sin cuenta, sin GPS, sin anuncios. Ceuta y Melilla no cuentan.
 
 ## Publicar (una sola vez)
 1. En GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
@@ -9,6 +9,7 @@ Aplicación web estática (HTML + GeoJSON local, sin dependencias externas) para
 4. iPhone: abrir en Safari → Compartir → **Añadir a pantalla de inicio**.
 
 ## Uso
+- Pestañas **Provincias / Ciudades** en la lista. Las ciudades salen como puntos sobre el mapa (se pueden ocultar con «Mostrar ciudades»); al tocar, gana el punto más cercano al dedo. Con zoom se separan las zonas densas.
 - Tocar una provincia (o su casilla en la lista) la marca/desmarca. Año y notas: botón «Detalles» o tocar en el mapa.
 - Zoom: botones +/−, pellizco o rueda; arrastrar para mover.
 - Los datos viven en el `localStorage` del navegador: no se sincronizan ni sobreviven al borrado de datos del sitio. Usar **Exportar copia** / **Importar copia** (JSON).
@@ -16,3 +17,9 @@ Aplicación web estática (HTML + GeoJSON local, sin dependencias externas) para
 ## Actualizar
 Editar los archivos de este repositorio y fusionar en `main`; el workflow vuelve a publicar.
 `provincias.geojson` deriva de datos públicos de límites provinciales, simplificados (~110 KB). Las claves de datos son los códigos INE de provincia (`01`–`50`).
+
+## Pendiente: revisar la lista de ciudades con datos oficiales
+`ciudades.json` es **provisional**: se generó con GeoNames (`tools/build_ciudades.py`), no con el padrón del INE.
+- Las cifras de población no son las oficiales; las ciudades de 45.000–57.000 hab. pueden sobrar o faltar (hay una lista en el campo `cercanas_al_limite` de `ciudades.json`).
+- Se descartaron a mano barrios y distritos que GeoNames trae como «ciudades» (Madrid, Barcelona…). Puede haber municipios de población dispersa que no aparezcan (p. ej. Siero, por confirmar).
+- Para corregirlo: obtener el padrón municipal vigente del INE (ine.es) con coordenadas (Wikidata o IGN) y regenerar el archivo. Los identificadores (`c_madrid`, …) se basan en el nombre para que las copias de seguridad existentes sigan valiendo.

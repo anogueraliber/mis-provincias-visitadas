@@ -16,10 +16,11 @@
 :root{
   --bg:#f4f5f7;--card:#fff;--text:#1d2330;--muted:#667085;--line:#e1e4ea;
   --ok:#2e9e5b;--ok-dark:#1f7a4d;--pend:#d3d7de;--stroke:#fff;--sel:#e8a317;--danger:#c0392b;
+  --city:#2563eb;--dotfill:#fff;--dotline:#344054;
 }
 @media (prefers-color-scheme:dark){
   :root{--bg:#10141b;--card:#1a2029;--text:#e8ebf0;--muted:#98a2b3;--line:#2b3340;
-    --ok:#36b36a;--ok-dark:#2e9e5b;--pend:#3a4352;--stroke:#10141b;}
+    --ok:#36b36a;--ok-dark:#2e9e5b;--pend:#3a4352;--stroke:#10141b;--city:#60a5fa;--dotfill:#e8ebf0;--dotline:#0b0e13;}
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -29,11 +30,15 @@ body{margin:0;background:var(--bg);color:var(--text);
 main{max-width:1100px;margin:0 auto;padding:12px 16px 32px}
 h1{font-size:1.4rem;margin:8px 0 12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-.stats{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.stats b{font-size:2rem;color:var(--ok-dark)}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.stats small{flex-basis:100%;color:var(--muted);font-size:.85rem}
+.stats b{font-size:1.9rem;color:var(--ok-dark)}
+.stats.c b{color:var(--city)}
 .stats span{color:var(--muted)}
-.bar{height:10px;background:var(--pend);border-radius:6px;overflow:hidden;margin-top:10px}
+.bar{height:10px;background:var(--pend);border-radius:6px;overflow:hidden;margin-top:8px}
 .bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .25s}
+.bar.c i{background:var(--city)}
 .layout{display:grid;gap:14px;margin-top:14px}
 @media (min-width:860px){.layout{grid-template-columns:1.5fr 1fr;align-items:start}}
 #mapwrap{position:relative;padding:8px}
@@ -43,6 +48,9 @@ h1{font-size:1.4rem;margin:8px 0 12px}
   -webkit-tap-highlight-color:transparent}
 #map path.v{fill:var(--ok)}
 #map path.sel{stroke:var(--sel);stroke-width:2.5}
+#map .dot{fill:var(--dotfill);stroke:var(--dotline);stroke-width:1.2;vector-effect:non-scaling-stroke;cursor:pointer;pointer-events:none}
+#map .dot.v{fill:var(--city);stroke:var(--dotfill)}
+#map .dot.sel{stroke:var(--sel);stroke-width:3}
 #map .frame{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
 .zoom{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:6px}
 .zoom button{width:40px;height:40px;font-size:1.4rem;padding:0}
@@ -51,10 +59,14 @@ button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);col
 button:active,.btn:active{opacity:.7}
 button.primary{background:var(--ok-dark);border-color:var(--ok-dark);color:#fff}
 button.danger{color:var(--danger);border-color:var(--danger)}
-.legend{display:flex;gap:16px;color:var(--muted);font-size:.9rem;margin:8px 4px 0}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin:8px 4px 0;align-items:center}
+.legend label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.legend .d{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--dotline);margin-right:6px;vertical-align:-1px;background:var(--dotfill)}
+.legend .d.v{background:var(--city);border-color:var(--dotfill);outline:1px solid var(--dotline)}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 #msg{color:var(--danger);margin:8px 4px 0;display:none}
-#detail h2{margin:0 0 8px;font-size:1.15rem}
+#detail h2{margin:0 0 4px;font-size:1.15rem}
+#dsub{color:var(--muted);font-size:.85rem;margin-bottom:6px}
 #detail .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
 label.f{display:block;margin-top:10px;font-size:.9rem;color:var(--muted)}
 input[type=number],input[type=search],textarea,select{
@@ -62,15 +74,19 @@ input[type=number],input[type=search],textarea,select{
   background:var(--bg);color:var(--text);margin-top:4px}
 textarea{min-height:80px;resize:vertical}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-#list{list-style:none;margin:10px 0 0;padding:0;max-height:430px;overflow:auto;-webkit-overflow-scrolling:touch;
+#list,#clist{list-style:none;margin:10px 0 0;padding:0;max-height:430px;overflow:auto;-webkit-overflow-scrolling:touch;
   border:1px solid var(--line);border-radius:10px}
-#list li{display:flex;align-items:center;border-bottom:1px solid var(--line)}
-#list li:last-child{border-bottom:0}
-#list li.sel{background:color-mix(in srgb,var(--sel) 18%,transparent)}
-#list label{flex:1;display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;min-height:44px}
-#list input{width:22px;height:22px;accent-color:var(--ok-dark);flex:none}
-#list small{color:var(--muted)}
-#list .info{border:0;background:none;color:var(--muted);padding:6px 14px;min-height:44px}
+#list li,#clist li{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+#list li:last-child,#clist li:last-child{border-bottom:0}
+#clist li.grp{background:var(--bg);color:var(--muted);font-size:.8rem;font-weight:600;padding:6px 12px;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0;z-index:1}
+#list li.sel,#clist li.sel{background:color-mix(in srgb,var(--sel) 18%,transparent)}
+#list label,#clist label{flex:1;display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;min-height:44px}
+#list input,#clist input{width:22px;height:22px;accent-color:var(--ok-dark);flex:none}
+#list small,#clist small{color:var(--muted)}
+#list .info,#clist .info{border:0;background:none;color:var(--muted);padding:6px 14px;min-height:44px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.tabs button[aria-selected=true]{background:var(--ok-dark);border-color:var(--ok-dark);color:#fff}
+.note{color:var(--muted);font-size:.8rem;margin:8px 2px 0}
 .filters{display:flex;gap:8px;margin-top:10px}
 .filters select{margin:0}
 #empty{display:none;color:var(--muted);padding:12px}
@@ -82,8 +98,12 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
   <h1>Mis provincias visitadas</h1>
 
   <section class="card" aria-live="polite">
-    <div class="stats"><b id="count">0/50</b><span id="pct">0 %</span></div>
-    <div class="bar"><i id="bar"></i></div>
+    <div class="statgrid">
+      <div><div class="stats"><small>Provincias</small><b id="count">0/50</b><span id="pct">0 %</span></div>
+        <div class="bar"><i id="bar"></i></div></div>
+      <div><div class="stats c"><small>Ciudades &gt; 50.000 hab.</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div>
+        <div class="bar c"><i id="cbar"></i></div></div>
+    </div>
   </section>
 
   <div class="layout">
@@ -96,13 +116,16 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
           <button id="zreset" aria-label="Restablecer vista" style="font-size:1rem">⟲</button>
         </div>
       </section>
-      <div class="legend"><span><i style="background:var(--ok)"></i>Visitada</span><span><i style="background:var(--pend)"></i>Pendiente</span></div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>Provincia visitada</span><span><i style="background:var(--pend)"></i>Pendiente</span>
+        <span><i class="d v"></i>Ciudad visitada</span><span><i class="d"></i>Pendiente</span>
+        <label><input type="checkbox" id="showc" checked> Mostrar ciudades</label></div>
       <p id="msg">No se pudo cargar el mapa. Puedes seguir usando la lista.</p>
     </div>
 
     <div>
       <section class="card" id="detail">
-        <h2 id="dname">Toca una provincia</h2>
+        <h2 id="dname">Toca una provincia o ciudad</h2>
+        <div id="dsub"></div>
         <div id="dbody" hidden>
           <div class="row"><button id="dtoggle" class="primary"></button></div>
           <label class="f">Año de la primera visita (opcional)
@@ -113,14 +136,20 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
       </section>
 
       <section class="card" style="margin-top:14px">
-        <input type="search" id="q" placeholder="Buscar provincia…" autocomplete="off" aria-label="Buscar provincia">
+        <div class="tabs" role="tablist">
+          <button id="tabp" role="tab" aria-selected="true">Provincias</button>
+          <button id="tabc" role="tab" aria-selected="false">Ciudades</button>
+        </div>
+        <input type="search" id="q" placeholder="Buscar…" autocomplete="off" aria-label="Buscar">
         <div class="filters">
           <select id="flt" aria-label="Filtrar">
             <option value="all">Todas</option><option value="v">Visitadas</option><option value="p">Pendientes</option>
           </select>
         </div>
         <ul id="list"></ul>
+        <ul id="clist" hidden></ul>
         <div id="empty">Sin resultados.</div>
+        <p class="note" id="cnote" hidden>Lista provisional (datos GeoNames, no oficiales): pendiente de revisar con el padrón del INE. Ceuta y Melilla cuentan aquí como ciudades.</p>
         <div class="tools">
           <button id="exp">Exportar copia</button>
           <button id="imp">Importar copia</button>
@@ -131,37 +160,39 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
     </div>
   </div>
 
-  <footer>Los datos se guardan solo en este navegador. Si borras los datos del sitio o cambias de dispositivo, se pierden: usa «Exportar copia» y «Importar copia». Ceuta y Melilla (ciudades autónomas) no cuentan.</footer>
+  <footer>Los datos se guardan solo en este navegador. Si borras los datos del sitio o cambias de dispositivo, se pierden: usa «Exportar copia» y «Importar copia». Ceuta y Melilla (ciudades autónomas) no cuentan como provincias.</footer>
 </main>
 
 <script>
 (function(){
 'use strict';
-var KEY='misProvinciasVisitadas.v1', TOTAL=50, NS='http://www.w3.org/2000/svg';
-var data={}, feats=[], byId={}, sel=null, paths={}, rows={};
+var KEY='misProvinciasVisitadas.v1', NS='http://www.w3.org/2000/svg';
+var data={}, feats=[], cities=[], byId={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
 
+function $(id){return document.getElementById(id)}
 function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object')data=r}catch(e){data={}}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
-function $(id){return document.getElementById(id)}
 function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
 function rec(id){return data[id]||(data[id]={v:0,y:'',n:''})}
 function isV(id){return !!(data[id]&&data[id].v)}
 function clean(id){var r=data[id];if(r&&!r.v&&!r.y&&!r.n)delete data[id]}
+function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
 
 /* ---------- Estadísticas ---------- */
-function stats(){
-  var n=0;feats.forEach(function(f){if(isV(f.id))n++});
-  var t=feats.length||TOTAL, p=Math.round(n*100/t);
-  $('count').textContent=n+'/'+t;$('pct').textContent=p+' %';$('bar').style.width=p+'%';
+function countOf(list){var n=0;list.forEach(function(f){if(isV(f.id))n++});return n}
+function stat(list,c,p,b,total){
+  var n=countOf(list),t=total||list.length,pc=t?Math.round(n*100/t):0;
+  $(c).textContent=n+'/'+t;$(p).textContent=pc+' %';$(b).style.width=pc+'%';
 }
+function stats(){stat(feats,'count','pct','bar',feats.length||50);stat(cities,'ccount','cpct','cbar',cities.length)}
 
 /* ---------- Cambios de estado ---------- */
 function refresh(id){
   var v=isV(id);
   if(paths[id])paths[id].classList.toggle('v',v);
+  if(dots[id])dots[id].classList.toggle('v',v);
   if(rows[id]){
-    rows[id].cb.checked=v;
-    var r=data[id]||{};
+    rows[id].cb.checked=v;var r=data[id]||{};
     rows[id].sm.textContent=[r.y||'',r.n?'📝':''].filter(Boolean).join(' ');
   }
   stats();applyFilter();
@@ -169,20 +200,23 @@ function refresh(id){
 }
 function setV(id,v){rec(id).v=v?1:0;clean(id);save();refresh(id)}
 function toggle(id){setV(id,!isV(id))}
-
+function mark(id,on){
+  var el=paths[id]||dots[id];if(!el)return;el.classList.toggle('sel',on);
+  if(on&&paths[id]&&citiesG)citiesG.parentNode.insertBefore(paths[id],citiesG);
+  else if(on&&paths[id])paths[id].parentNode.appendChild(paths[id]);
+}
 function select(id,scroll){
   var old=sel;sel=id;
-  if(old&&paths[old])paths[old].classList.remove('sel');
-  if(old&&rows[old])rows[old].li.classList.remove('sel');
-  if(paths[id]){paths[id].classList.add('sel');paths[id].parentNode.appendChild(paths[id])}
-  if(rows[id])rows[id].li.classList.add('sel');
+  if(old){mark(old,false);if(rows[old])rows[old].li.classList.remove('sel')}
+  mark(id,true);if(rows[id])rows[id].li.classList.add('sel');
   drawDetail();
   if(scroll)$('detail').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function drawDetail(){
-  if(!sel){return}
+  if(!sel)return;
   var f=byId[sel],r=data[sel]||{};
   $('dname').textContent=f.name;$('dbody').hidden=false;
+  $('dsub').textContent=f.city?'Ciudad · '+f.pname+' · ≈ '+fmt(f.pop)+' hab. (GeoNames, provisional)':'Provincia';
   var b=$('dtoggle');b.textContent=isV(sel)?'✓ Visitada — quitar':'Marcar como visitada';
   b.className=isV(sel)?'':'primary';
   if(document.activeElement!==$('dyear'))$('dyear').value=r.y||'';
@@ -195,35 +229,58 @@ $('dyear').oninput=function(){
 };
 $('dnote').oninput=function(){if(!sel)return;rec(sel).n=this.value;clean(sel);save();refresh(sel)};
 
-/* ---------- Lista ---------- */
+/* ---------- Listas ---------- */
+function addRow(ul,f){
+  var li=document.createElement('li'),lb=document.createElement('label'),cb=document.createElement('input'),
+      nm=document.createElement('span'),sm=document.createElement('small'),inf=document.createElement('button');
+  cb.type='checkbox';nm.textContent=f.name;inf.className='info';inf.textContent='Detalles';
+  inf.setAttribute('aria-label','Año y notas de '+f.name);
+  lb.appendChild(cb);lb.appendChild(nm);lb.appendChild(sm);li.appendChild(lb);li.appendChild(inf);ul.appendChild(li);
+  cb.onchange=function(){setV(f.id,cb.checked);select(f.id,false)};
+  inf.onclick=function(){select(f.id,true)};
+  rows[f.id]={li:li,cb:cb,sm:sm,key:norm(f.name+' '+(f.pname||''))};
+  return li;
+}
 function buildList(){
   var ul=$('list');ul.textContent='';
-  feats.slice().sort(function(a,b){return a.name.localeCompare(b.name,'es')}).forEach(function(f){
-    var li=document.createElement('li'),lb=document.createElement('label'),cb=document.createElement('input'),
-        nm=document.createElement('span'),sm=document.createElement('small'),inf=document.createElement('button');
-    cb.type='checkbox';nm.textContent=f.name;inf.className='info';inf.textContent='Detalles';
-    inf.setAttribute('aria-label','Año y notas de '+f.name);
-    lb.appendChild(cb);lb.appendChild(nm);lb.appendChild(sm);li.appendChild(lb);li.appendChild(inf);ul.appendChild(li);
-    cb.onchange=function(){setV(f.id,cb.checked);select(f.id,false)};
-    inf.onclick=function(){select(f.id,true)};
-    rows[f.id]={li:li,cb:cb,sm:sm,key:norm(f.name)};
+  feats.slice().sort(function(a,b){return a.name.localeCompare(b.name,'es')}).forEach(function(f){addRow(ul,f)});
+}
+function buildCities(){
+  var ul=$('clist');ul.textContent='';groups=[];
+  var last=null,g=null;
+  cities.slice().sort(function(a,b){return a.pname.localeCompare(b.pname,'es')||a.name.localeCompare(b.name,'es')}).forEach(function(c){
+    if(c.pname!==last){
+      last=c.pname;var h=document.createElement('li');h.className='grp';h.textContent=c.pname;ul.appendChild(h);g={li:h,ids:[]};groups.push(g);
+    }
+    addRow(ul,c);g.ids.push(c.id);
   });
 }
 function applyFilter(){
   var q=norm($('q').value.trim()),m=$('flt').value,shown=0;
   Object.keys(rows).forEach(function(id){
+    var inMode=!!byId[id].city===(mode==='c');
     var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===isV(id));
-    rows[id].li.style.display=ok?'':'none';if(ok)shown++;
+    rows[id].li.style.display=ok?'':'none';if(ok&&inMode)shown++;
+  });
+  groups.forEach(function(g){
+    g.li.style.display=g.ids.some(function(id){return rows[id].li.style.display!=='none'})?'':'none';
   });
   $('empty').style.display=shown?'none':'block';
 }
+function setMode(m){
+  mode=m;
+  $('list').hidden=m!=='p';$('clist').hidden=m!=='c';$('cnote').hidden=m!=='c';
+  $('tabp').setAttribute('aria-selected',m==='p');$('tabc').setAttribute('aria-selected',m==='c');
+  $('q').placeholder=m==='p'?'Buscar provincia…':'Buscar ciudad o provincia…';
+  applyFilter();
+}
+$('tabp').onclick=function(){setMode('p')};$('tabc').onclick=function(){setMode('c')};
 $('q').oninput=applyFilter;$('flt').onchange=applyFilter;
 
 /* ---------- Mapa ---------- */
 var svg=$('map'),base,view;
-function project(lon,lat,f){
-  var canarias=(f.id==='35'||f.id==='38');
-  if(canarias){lon+=8.6;lat+=6.1}
+function project(lon,lat,pid){
+  if(pid==='35'||pid==='38'){lon+=8.6;lat+=6.1}  // Canarias en recuadro
   return [lon*0.766,-lat];
 }
 function drawMap(gj){
@@ -234,7 +291,7 @@ function drawMap(gj){
     var d='';
     f.geom.coordinates.forEach(function(poly){poly.forEach(function(ring){
       ring.forEach(function(c,i){
-        var p=project(c[0],c[1],f);d+=(i?'L':'M')+p[0].toFixed(3)+' '+p[1].toFixed(3);
+        var p=project(c[0],c[1],f.id);d+=(i?'L':'M')+p[0].toFixed(3)+' '+p[1].toFixed(3);
         if(p[0]<minx)minx=p[0];if(p[0]>maxx)maxx=p[0];if(p[1]<miny)miny=p[1];if(p[1]>maxy)maxy=p[1];
         if(f.id==='35'||f.id==='38'){if(p[0]<cb[0])cb[0]=p[0];if(p[1]<cb[1])cb[1]=p[1];if(p[0]>cb[2])cb[2]=p[0];if(p[1]>cb[3])cb[3]=p[1]}
       });d+='Z';
@@ -249,11 +306,28 @@ function drawMap(gj){
   fr.setAttribute('class','frame');svg.insertBefore(fr,svg.firstChild);
   base={x:minx-pad,y:miny-pad,w:maxx-minx+2*pad,h:maxy-miny+2*pad};
   svg.style.aspectRatio=(base.w/base.h).toFixed(3);
+  citiesG=document.createElementNS(NS,'g');citiesG.setAttribute('id','cities');svg.appendChild(citiesG);
   view=Object.assign({},base);setView();
 }
-function setView(){svg.setAttribute('viewBox',view.x+' '+view.y+' '+view.w+' '+view.h)}
-function zoomAt(k,cx,cy){ // cx,cy en coordenadas del mapa
-  var w=Math.min(base.w,Math.max(base.w/12,view.w/k)),h=w*base.h/base.w;
+function drawDots(){
+  if(!citiesG)return;
+  cities.forEach(function(c){
+    var p=project(c.lon,c.lat,c.p);c.x=p[0];c.y=p[1];
+    var d=document.createElementNS(NS,'circle'),t=document.createElementNS(NS,'title');
+    d.setAttribute('class','dot');t.textContent=c.name;d.appendChild(t);
+    d.setAttribute('cx',c.x.toFixed(3));d.setAttribute('cy',c.y.toFixed(3));
+    citiesG.appendChild(d);dots[c.id]=d;
+  });
+  sizeDots();
+}
+function sizeDots(){
+  if(!citiesG||!view)return;
+  var w=svg.clientWidth||320,u=view.w/w;
+  cities.forEach(function(c){if(dots[c.id])dots[c.id].setAttribute('r',(3.2*u).toFixed(4))});
+}
+function setView(){svg.setAttribute('viewBox',view.x+' '+view.y+' '+view.w+' '+view.h);sizeDots()}
+function zoomAt(k,cx,cy){
+  var w=Math.min(base.w,Math.max(base.w/20,view.w/k)),h=w*base.h/base.w;
   view.x=cx-(cx-view.x)*w/view.w;view.y=cy-(cy-view.y)*h/view.h;view.w=w;view.h=h;clampView();setView();
 }
 function clampView(){
@@ -266,6 +340,12 @@ $('zin').onclick=function(){zoomAt(1.6,view.x+view.w/2,view.y+view.h/2)};
 $('zout').onclick=function(){zoomAt(1/1.6,view.x+view.w/2,view.y+view.h/2)};
 $('zreset').onclick=function(){view=Object.assign({},base);setView()};
 svg.addEventListener('wheel',function(e){e.preventDefault();var c=toMap(e.clientX,e.clientY);zoomAt(e.deltaY<0?1.2:1/1.2,c[0],c[1])},{passive:false});
+window.addEventListener('resize',sizeDots);
+$('showc').onchange=function(){
+  if(citiesG)citiesG.style.display=this.checked?'':'none';
+  try{localStorage.setItem('mpv.showCities',this.checked?'1':'0')}catch(e){}
+};
+try{if(localStorage.getItem('mpv.showCities')==='0')$('showc').checked=false}catch(e){}
 
 /* Toque vs. arrastre vs. pellizco con Pointer Events */
 var ptrs={},tapId=null,moved=false,startD=0,lastC=null;
@@ -295,20 +375,40 @@ svg.addEventListener('pointermove',function(e){
 function up(e){
   if(!ptrs[e.pointerId])return;
   delete ptrs[e.pointerId];
-  if(!pts().length&&!moved&&tapId&&e.type==='pointerup'){select(tapId,false);toggle(tapId)}
+  if(!pts().length&&!moved&&e.type==='pointerup'){
+    var id=tapId;
+    if(citiesG&&citiesG.style.display!=='none'){ // gana la ciudad más cercana al dedo (radio 14 px)
+      var m=toMap(e.clientX,e.clientY),u=view.w/svg.clientWidth,bd=14*u;
+      cities.forEach(function(c){var d=Math.hypot(c.x-m[0],c.y-m[1]);if(d<bd){bd=d;id=c.id}});
+    }
+    if(id&&byId[id]){select(id,false);toggle(id)}
+  }
   if(!pts().length){tapId=null}
 }
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
 
 /* ---------- Copias de seguridad ---------- */
 $('exp').onclick=function(){
-  var out={app:'mis-provincias-visitadas',version:1,exportado:new Date().toISOString(),provincias:{}};
-  Object.keys(data).forEach(function(id){var r=data[id];if(r.v||r.y||r.n)out.provincias[id]={visitada:!!r.v,anio:r.y||'',notas:r.n||'',nombre:byId[id]?byId[id].name:''}});
+  var out={app:'mis-provincias-visitadas',version:2,exportado:new Date().toISOString(),provincias:{},ciudades:{}};
+  Object.keys(data).forEach(function(id){
+    var r=data[id],f=byId[id];if(!f||!(r.v||r.y||r.n))return;
+    var o={visitada:!!r.v,anio:r.y||'',notas:r.n||'',nombre:f.name};
+    if(f.city){o.provincia=f.pname;out.ciudades[id]=o}else out.provincias[id]=o;
+  });
   var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download='mis-provincias-'+new Date().toISOString().slice(0,10)+'.json';
   document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
 };
 $('imp').onclick=function(){$('file').click()};
+function parseSection(sec,city,nd){
+  var n=0;
+  Object.keys(sec).forEach(function(id){
+    var f=byId[id];if(!f||!!f.city!==city)return;var p=sec[id];
+    var r={v:p.visitada?1:0,y:String(p.anio||'').replace(/\D/g,'').slice(0,4),n:String(p.notas||'').slice(0,2000)};
+    if(r.v||r.y||r.n){nd[id]=r;if(r.v)n++}
+  });
+  return n;
+}
 $('file').onchange=function(){
   var f=this.files[0];this.value='';if(!f)return;
   var rd=new FileReader();
@@ -316,35 +416,37 @@ $('file').onchange=function(){
     try{
       var j=JSON.parse(rd.result);
       if(!j||j.app!=='mis-provincias-visitadas'||typeof j.provincias!=='object')throw 0;
-      var nd={},n=0;
-      Object.keys(j.provincias).forEach(function(id){
-        if(!byId[id])return;var p=j.provincias[id];
-        var r={v:p.visitada?1:0,y:String(p.anio||'').replace(/\D/g,'').slice(0,4),n:String(p.notas||'').slice(0,2000)};
-        if(r.v||r.y||r.n){nd[id]=r;if(r.v)n++}
-      });
-      if(!confirm('Se reemplazará tu lista actual por la copia ('+n+' provincias visitadas). ¿Continuar?'))return;
+      var nd={},np=parseSection(j.provincias,false,nd),nc=0,hasC=j.ciudades&&typeof j.ciudades==='object';
+      if(hasC)nc=parseSection(j.ciudades,true,nd);
+      else Object.keys(data).forEach(function(id){if(byId[id]&&byId[id].city)nd[id]=data[id]}); // copia antigua: se conservan las ciudades actuales
+      if(!confirm('Se reemplazará tu lista actual por la copia ('+np+' provincias'+(hasC?' y '+nc+' ciudades':'')+' visitadas). ¿Continuar?'))return;
       data=nd;save();Object.keys(rows).forEach(refresh);
     }catch(e){alert('El archivo no es una copia válida de esta aplicación.')}
   };
   rd.readAsText(f);
 };
 $('rst').onclick=function(){
-  if(!confirm('¿Desmarcar todas las provincias y borrar años y notas? Esta acción no se puede deshacer.'))return;
+  if(!confirm('¿Desmarcar todas las provincias y ciudades y borrar años y notas? Esta acción no se puede deshacer.'))return;
   data={};save();Object.keys(rows).forEach(refresh);
 };
 
 /* ---------- Arranque ---------- */
+function getJSON(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
 load();
-fetch('provincias.geojson').then(function(r){if(!r.ok)throw 0;return r.json()}).then(drawMap).catch(function(){
-  $('msg').style.display='block';
-  return null;
-}).then(function(){
+var P=getJSON('provincias.geojson').then(function(gj){drawMap(gj);return true}).catch(function(){$('msg').style.display='block';return false});
+var C=getJSON('ciudades.json').then(function(j){return j.ciudades||[]}).catch(function(){return []});
+Promise.all([P,C]).then(function(res){
   if(!feats.length){
     var N='Álava,Albacete,Alicante,Almería,Ávila,Badajoz,Illes Balears,Barcelona,Burgos,Cáceres,Cádiz,Castellón,Ciudad Real,Córdoba,A Coruña,Cuenca,Girona,Granada,Guadalajara,Gipuzkoa,Huelva,Huesca,Jaén,León,Lleida,La Rioja,Lugo,Madrid,Málaga,Murcia,Navarra,Ourense,Asturias,Palencia,Las Palmas,Pontevedra,Salamanca,Santa Cruz de Tenerife,Cantabria,Segovia,Sevilla,Soria,Tarragona,Teruel,Toledo,Valencia,Valladolid,Bizkaia,Zamora,Zaragoza'.split(',');
     feats=N.map(function(n,i){return{id:(i<9?'0':'')+(i+1),name:n}});
     feats.forEach(function(f){byId[f.id]=f});
   }
-  buildList();feats.forEach(function(f){refresh(f.id)});stats();
+  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,lon:c.lon,lat:c.lat,city:true}});
+  cities.forEach(function(c){byId[c.id]=c});
+  drawDots();
+  if(citiesG&&!$('showc').checked)citiesG.style.display='none';
+  buildList();buildCities();
+  Object.keys(rows).forEach(function(id){refresh(id)});stats();setMode('p');
 });
 })();
 </script>
