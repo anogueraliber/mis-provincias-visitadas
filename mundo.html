@@ -154,7 +154,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
     </div>
   </div>
 
-  <footer>Los datos se guardan solo en este navegador: usa «Guardar» (un archivo con todo, también España, Francia, Italia y Grecia) e «Importar copia» para guardarlos o pasarlos a otro dispositivo. España, Francia, Italia y Grecia pasan solos a «Has ido» si marcas algo dentro de ellos. Fronteras: Natural Earth (dominio público); en zonas disputadas se muestra una de las representaciones habituales, sin valor político. Se incluyen países, estados no plenamente reconocidos y territorios dependientes.</footer>
+  <footer>Los datos se guardan solo en este navegador: usa «Guardar» (un archivo con todo, también los países con detalle) e «Importar copia» para guardarlos o pasarlos a otro dispositivo. España, Francia, Italia, Grecia, Turquía y Macedonia del Norte pasan solos a «Has ido» si marcas algo dentro de ellos. Fronteras: Natural Earth (dominio público); en zonas disputadas se muestra una de las representaciones habituales, sin valor político. Se incluyen países, estados no plenamente reconocidos y territorios dependientes.</footer>
 </main>
 
 <script src="common.js"></script>
@@ -162,12 +162,12 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
 (function(){
 'use strict';
 var NS='http://www.w3.org/2000/svg';
-var PAIS={ESP:'es',FXX:'fr',GLP:'fr',MTQ:'fr',GUF:'fr',REU:'fr',MYT:'fr',ITA:'it',GRC:'gr'};  // entidades con pantalla propia: marcar algo dentro las marca aquí
+var PAIS={ESP:'es',FXX:'fr',GLP:'fr',MTQ:'fr',GUF:'fr',REU:'fr',MYT:'fr',ITA:'it',GRC:'gr',TUR:'tr',MKD:'mk'};  // entidades con pantalla propia: marcar algo dentro las marca aquí
 var DROM={'971':'GLP','972':'MTQ','973':'GUF','974':'REU','976':'MYT'};                      // départements de ultramar → su entidad en el mapa mundial
 var AUTO=null;
 function autoSet(){ // entidades del mundo marcadas automáticamente (se calcula una vez por carga)
   var s={};
-  [['es','ESP'],['it','ITA'],['gr','GRC']].forEach(function(p){var d=V.ns(p[0]);if(Object.keys(d).some(function(k){return d[k]&&d[k].v}))s[p[1]]=1});
+  [['es','ESP'],['it','ITA'],['gr','GRC'],['tr','TUR'],['mk','MKD']].forEach(function(p){var d=V.ns(p[0]);if(Object.keys(d).some(function(k){return d[k]&&d[k].v}))s[p[1]]=1});
   var fr=V.ns('fr');Object.keys(fr).forEach(function(k){if(fr[k]&&fr[k].v){var code=k.indexOf('c_')===0?k.slice(2,5):k;s[DROM[code]||'FXX']=1}});
   return s;
 }
@@ -337,7 +337,7 @@ $('exp').onclick=function(){V.guardar()};
 $('imp').onclick=function(){$('file').click()};
 $('file').onchange=function(){var f=this.files[0];this.value='';if(f)V.importar(f)};
 $('rst').onclick=function(){
-  if(!confirm('¿Quitar todas las marcas del mapa mundial y borrar años y notas? Esta acción no se puede deshacer. Las marcas de España, Francia, Italia y Grecia no cambian (y esos países seguirán marcados si tienes algo marcado dentro).'))return;
+  if(!confirm('¿Quitar todas las marcas del mapa mundial y borrar años y notas? Esta acción no se puede deshacer. Las marcas de los países con detalle (España, Francia, Italia, Grecia, Turquía y Macedonia del Norte) no cambian, y esos países seguirán marcados si tienes algo marcado dentro.'))return;
   Object.keys(data).forEach(function(k){delete data[k]});save();location.reload();
 };
 

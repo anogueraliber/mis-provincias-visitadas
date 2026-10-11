@@ -1,10 +1,12 @@
 """Genera datos/<pais>/{unidades,ciudades}.json y datos/nombres.json para las páginas de país.
-Países: es, fr, it, gr. Las coordenadas se proyectan aquí (x = lon·cos φ0, y = −lat) y los recuadros de ultramar se desplazan.
+Países: es, fr, it, gr, tr, mk. Las coordenadas se proyectan aquí (x = lon·cos φ0, y = −lat) y los recuadros de ultramar se desplazan.
 Fuentes (volcadas antes a JSON en una carpeta de trabajo, ver README):
   es: tools/intermedios/es_unidades.geojson + es_ciudades.json   (build_ciudades_es.py)
   fr: Natural Earth admin_1 (departamentos) + @etalab/decoupage-administratif (comunas, INSEE) + GeoNames (coordenadas)
   it: geoBoundaries ADM3 (CC BY 4.0, provincias) + comuni-json (ISTAT) + GeoNames (coordenadas)
   gr: tools/build_grecia_unidades.py (74 unidades regionales + Monte Athos) + @tsevdos/el-utils + GeoNames (población)
+  tr: geoBoundaries ADM1 (81 provincias) + códigos de matrícula de Natural Earth + lista de distritos de turkey-neighbourhoods + GeoNames (población)
+  mk: geoBoundaries ADM1 (8 regiones estadísticas) + GeoNames (ciudades y población)
 Uso: python tools/build_paises.py <carpeta_trabajo>      (requiere: shapely, geonamescache)"""
 import json, math, os, re, sys, unicodedata
 import geonamescache
@@ -16,7 +18,7 @@ MIN_POP, BIG, REVIEW, TOL = 20000, 50000, (17000, 23000), 0.004
 GN = geonamescache.GeonamesCache().get_cities()
 
 def norm(s):
-    s = unicodedata.normalize('NFD', s.lower()); s = ''.join(c for c in s if not unicodedata.combining(c))
+    s = unicodedata.normalize('NFD', s.lower().replace('ı', 'i')); s = ''.join(c for c in s if not unicodedata.combining(c))
     return re.sub(r'[^a-z0-9]+', ' ', s.replace("'", ' ')).strip()
 def km(a, b):
     la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
@@ -43,6 +45,8 @@ CFG = {
  'fr': dict(nombre='Francia', unidad='départements', unidad1='département', tab='Départements', flag='🇫🇷', lat0=46.5, mundo='FXX',
             destinos={'973': (-8.5, 48.6), '971': (-8.5, 45.9), '972': (-8.5, 44.2), '974': (-5.0, 45.9), '976': (-5.0, 44.2)}),
  'it': dict(nombre='Italia', unidad='provincias y ciudades metropolitanas', unidad1='provincia', tab='Provincias', flag='🇮🇹', lat0=42, mundo='ITA'),
+ 'tr': dict(nombre='Turquía', unidad='provincias (il)', unidad1='provincia', tab='Provincias', flag='🇹🇷', lat0=39, mundo='TUR'),
+ 'mk': dict(nombre='Macedonia del Norte', unidad='regiones estadísticas', unidad1='región', tab='Regiones', flag='🇲🇰', lat0=41.6, mundo='MKD'),
  'gr': dict(nombre='Grecia', unidad='unidades regionales', unidad1='unidad regional', tab='Unidades', flag='🇬🇷', lat0=38.5, mundo='GRC'),
 }
 
@@ -130,7 +134,7 @@ def gn_candidates(cc):
         if c['countrycode'] in codes:
             c = dict(c); c['keys'] = {norm(c['name'])} | {norm(a) for a in c.get('alternatenames', []) if a}; out.append(c); seen.add(c['geonameid'])
     allx = json.load(open(W + '/atc_fr_it_gr.json', encoding='utf-8'))
-    extra = [e for k in codes for e in allx[k]]
+    extra = [e for k in codes for e in allx.get(k, [])]
     for e in extra:
         if e['id'] in seen: continue
         out.append({'geonameid': e['id'], 'name': e['n'], 'population': e['p'], 'longitude': e['lon'], 'latitude': e['lat'],
@@ -264,7 +268,59 @@ def greece():
     print('GR descartadas (no coinciden con ningún municipio o sede):', drop)
     NAMES['gr'] = {**{u['id']: u['n'] for u in ud['items']}, **write('gr', ud, cities, proj, 'GeoNames (provisional) filtrado con municipios y sedes de @tsevdos/el-utils')}
 
-for f in (spain, france, italy, greece):
+CAPITAL = {'Hatay': 'Antakya', 'Kocaeli': 'İzmit'}   # capitales de provincia con nombre distinto al de la provincia
+# --- Turquía ------------------------------------------------------------------------------------
+def turkey():
+    ne = [f for f in json.load(open(W + '/admin1.geojson', encoding='utf-8'))['features'] if f['properties']['adm0_a3'] == 'TUR']
+    gb = json.load(open(W + '/gb2/TUR-ADM1.geojson', encoding='utf-8'))['features']
+    il = json.load(open(W + '/tr_ilce.json', encoding='utf-8')); pname = {c['code']: c['name'] for c in il['cities']}
+    nes = [(f['properties']['iso_3166_2'].split('-')[1], shape(f['geometry'])) for f in ne]
+    units = []
+    for f in gb:   # geoBoundaries da los límites; el código de matrícula sale del polígono de Natural Earth que contiene su punto interior
+        rp = shape(f['geometry']).representative_point(); code = next(c for c, g in nes if g.contains(rp))
+        units.append({'id': code, 'n': pname[code], 'geom': f['geometry']})
+    assert len({u['id'] for u in units}) == 81 == len(pname)
+    ud, proj = build_units('tr', units)
+    up = {u['id']: (prep(shape(u['geom'])), shape(u['geom'])) for u in units}
+    official = {c: {norm(d): d for d in il['districts'][c]} for c in il['districts']}
+    for c in official: official[c].setdefault(norm(pname[c]), pname[c])   # la capital de provincia lleva el nombre de la provincia
+    best = {}
+    for g in gn_candidates('tr'):
+        if g['population'] < REVIEW[0]: continue
+        pt = Point(g['longitude'], g['latitude']); near = near_units(up, g['longitude'], g['latitude'])
+        for u in sorted(near, key=lambda u: 0 if up[u][0].contains(pt) else 1):
+            cap = norm(pname[u])
+            hit = pname[u] if cap in g['keys'] else next((official[u][k] for k in g['keys'] if k in official[u]), None)   # la capital (nombre alternativo = provincia) prima sobre el distrito
+            if hit == pname[u]: hit = CAPITAL.get(hit, hit)
+            if hit:
+                key = (u, hit)
+                if key not in best or g['population'] > best[key]['pop']: best[key] = dict(id='c_g%d' % g['geonameid'], n=hit, p=u, pop=g['population'], lon=g['longitude'], lat=g['latitude'])
+                break
+    cities = list(best.values())
+    NAMES['tr'] = {**{u['id']: u['n'] for u in ud['items']}, **write('tr', ud, cities, proj, 'GeoNames (población, provisional) filtrado con la lista de distritos de turkey-neighbourhoods')}
+
+# --- Macedonia del Norte -------------------------------------------------------------------------
+NO_CIUDAD = {'Centar Župa', 'Lipkovo', 'Zelino', 'Tearce'}   # municipios rurales a los que GeoNames asigna población municipal
+def macedonia():
+    gb = json.load(open(W + '/gb2/MKD-ADM1.geojson', encoding='utf-8'))['features']
+    NUTS = {'Vardar': ('MK001', 'Vardar'), 'East': ('MK002', 'Este'), 'Southwest': ('MK003', 'Suroeste'), 'Southeast': ('MK004', 'Sureste'),
+            'Pelagonia': ('MK005', 'Pelagonia'), 'Polog': ('MK006', 'Polog'), 'Northeast': ('MK007', 'Noreste'), 'Skopje': ('MK008', 'Skopie')}
+    units = [{'id': NUTS[f['properties']['shapeName']][0], 'n': NUTS[f['properties']['shapeName']][1], 'geom': f['geometry']} for f in gb]
+    assert len(units) == 8
+    ud, proj = build_units('mk', units)
+    up = {u['id']: (prep(shape(u['geom'])), shape(u['geom'])) for u in units}
+    gnc = gn_candidates('mk'); sk = next(g for g in gnc if g['name'] == 'Skopje')
+    cities = []; drop = []
+    for g in sorted(gnc, key=lambda g: -g['population']):
+        if g['population'] < REVIEW[0]: continue
+        if g['name'] in NO_CIUDAD: drop.append(g['name']); continue
+        if g is not sk and km((g['latitude'], g['longitude']), (sk['latitude'], sk['longitude'])) < 12: drop.append(g['name']); continue   # municipios de la ciudad de Skopie
+        u = locate(up, g['longitude'], g['latitude'])
+        if u: cities.append(dict(id='c_g%d' % g['geonameid'], n=g['name'], p=u, pop=g['population'], lon=g['longitude'], lat=g['latitude']))
+    print('MK descartadas (municipios de Skopie):', drop)
+    NAMES['mk'] = {**{u['id']: u['n'] for u in ud['items']}, **write('mk', ud, cities, proj, 'GeoNames (población, provisional); Skopie sin sus municipios')}
+
+for f in (spain, france, italy, greece, turkey, macedonia):
     f()
 mundo = json.load(open('mundo.json', encoding='utf-8'))
 NAMES['mundo'] = {i['id']: i['n'] for i in mundo['items']}

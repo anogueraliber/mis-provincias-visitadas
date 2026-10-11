@@ -2,13 +2,15 @@
 (function (g) {
 'use strict';
 var KEY = 'misViajes.v1';
-var NS = ['mundo', 'es', 'fr', 'it', 'gr'];
+var NS = ['mundo', 'es', 'fr', 'it', 'gr', 'tr', 'mk'];
 var PAGES = {
   mundo: { n: 'Mundo', f: '🌍', u: 'mundo.html' },
   es: { n: 'España', f: '🇪🇸', u: 'index.html?p=es' },
   fr: { n: 'Francia', f: '🇫🇷', u: 'index.html?p=fr' },
   it: { n: 'Italia', f: '🇮🇹', u: 'index.html?p=it' },
-  gr: { n: 'Grecia', f: '🇬🇷', u: 'index.html?p=gr' }
+  gr: { n: 'Grecia', f: '🇬🇷', u: 'index.html?p=gr' },
+  tr: { n: 'Turquía', f: '🇹🇷', u: 'index.html?p=tr' },
+  mk: { n: 'Macedonia del Norte', f: '🇲🇰', u: 'index.html?p=mk' }
 };
 var data = {};
 
@@ -89,7 +91,7 @@ function importar(file) {
     if (!j || typeof j !== 'object') return alert('El archivo no es una copia válida de esta aplicación.');
     var nd = JSON.parse(JSON.stringify(data)), msg = '', ok = true, aliasP = Promise.resolve({});
     if (j.app === 'mis-viajes' && j.datos) {
-      NS.forEach(function (ns) { nd[ns] = {}; var c = section(j.datos[ns], ns, nd[ns]); msg += (msg ? ', ' : '') + PAGES[ns].n + ': ' + c; });
+      NS.forEach(function (ns) { if (!j.datos[ns]) return; nd[ns] = {}; var c = section(j.datos[ns], ns, nd[ns]); msg += (msg ? ', ' : '') + PAGES[ns].n + ': ' + c; });  // solo se reemplazan las pantallas que trae el archivo
     } else if (j.app === 'mis-provincias-visitadas' && j.provincias) {
       var keepCities = {}; Object.keys(nd.es).forEach(function (id) { if (id.indexOf('c_') === 0) keepCities[id] = nd.es[id]; });
       nd.es = {}; var c1 = section(j.provincias, 'es', nd.es), c2 = 0;

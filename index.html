@@ -169,17 +169,21 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
 (function(){
 'use strict';
 var NS='http://www.w3.org/2000/svg';
-var CC=new URLSearchParams(location.search).get('p');if(['es','fr','it','gr'].indexOf(CC)<0)CC='es';
+var CC=new URLSearchParams(location.search).get('p');if(['es','fr','it','gr','tr','mk'].indexOf(CC)<0)CC='es';
 var FUENTES={
  es:'Límites provinciales: datos abiertos (click_that_hood). Municipios, códigos y coordenadas: INE; población: GeoNames (provisional).',
  fr:'Límites: Natural Earth (dominio público). Comunas y población: INSEE vía Etalab (Licence Ouverte). Coordenadas: GeoNames.',
  it:'Límites: geoBoundaries (CC BY 4.0). Comuni y población (censo 2011): ISTAT (CC BY 3.0 IT) vía comuni-json. Coordenadas: GeoNames.',
- gr:'Límites: geoBoundaries (CC BY 4.0), agrupados en unidades regionales con la tabla de @tsevdos/el-utils (MIT). Ciudades y población: GeoNames (provisional).'};
+ gr:'Límites: geoBoundaries (CC BY 4.0), agrupados en unidades regionales con la tabla de @tsevdos/el-utils (MIT). Ciudades y población: GeoNames (provisional).',
+ tr:'Límites: geoBoundaries (CC BY 4.0); códigos de matrícula: Natural Earth. Distritos: turkey-neighbourhoods. Ciudades y población: GeoNames (provisional).',
+ mk:'Límites: geoBoundaries (CC BY 4.0). Ciudades y población: GeoNames (provisional).'};
 var NOTAS={
  es:'Lista provisional: municipios de más de 20.000 hab. (lista del INE con población de GeoNames, no oficial). Puede faltar alguno de población dispersa y sobrar o faltar los cercanos al límite. Ceuta y Melilla cuentan aquí como ciudades.',
  fr:'Comunas de más de 20.000 hab. con población legal del INSEE (año por confirmar). Paris, Marsella y Lyon cuentan como una sola. Algunas comunas nuevas fusionadas pueden estar situadas en su núcleo principal o no tener punto en el mapa.',
  it:'Comuni de más de 20.000 hab. con población del censo 2011 (ISTAT, vía comuni-json, lista de 2020): pueden faltar los creados desde 2020 y las cifras han cambiado. Algún comune no tiene punto en el mapa.',
- gr:'Lista provisional: municipios de más de 20.000 hab. según GeoNames filtrado con la lista oficial de municipios; la población no es oficial y puede faltar alguno.'};
+ gr:'Lista provisional: municipios de más de 20.000 hab. según GeoNames filtrado con la lista oficial de municipios; la población no es oficial y puede faltar alguno.',
+ tr:'Capitales de provincia y distritos (ilçe) de más de 20.000 hab., con población de GeoNames (no oficial; puede ser antigua). Los distritos de İstanbul, Ankara o İzmir salen como ciudades separadas. Puede faltar alguno.',
+ mk:'Macedonia del Norte no tiene provincias: se usan sus 8 regiones estadísticas. Ciudades de más de 20.000 hab. con población de GeoNames (no oficial). Skopie cuenta como una sola ciudad, sin sus municipios.'};
 var data=V.ns(CC), UD=null, feats=[], cities=[], byId={}, byOld={}, citiesOf={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
 var svg=document.getElementById('map'),base,view;
 
