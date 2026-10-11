@@ -96,7 +96,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
   <section class="card" aria-live="polite">
     <div class="statgrid">
       <div><div class="stats"><small id="l1">Provincias</small><b id="count">0/0</b><span id="pct">0 %</span></div><div class="bar"><i id="bar"></i></div></div>
-      <div><div class="stats c"><small>Ciudades &gt; 20.000 hab.</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div><div class="bar c"><i id="cbar"></i></div></div>
+      <div><div class="stats c"><small id="l2">Ciudades</small><b id="ccount">0/0</b><span id="cpct">0 %</span></div><div class="bar c"><i id="cbar"></i></div></div>
     </div>
   </section>
 
@@ -141,7 +141,7 @@ footer{color:var(--muted);font-size:.85rem;margin-top:18px}
         <input type="search" id="q" placeholder="Buscar…" autocomplete="off" aria-label="Buscar">
         <div class="filters">
           <select id="csize" aria-label="Tamaño de la ciudad" hidden>
-            <option value="all">Todos</option><option value="big">Más de 50.000</option><option value="small">20.000–50.000</option>
+            <option value="all">Todos</option><option value="big">Más de 50.000</option><option value="mid">20.000–50.000</option><option value="small" id="osmall">Menos de 20.000</option>
           </select>
           <select id="flt" aria-label="Filtrar">
             <option value="all">Todas</option><option value="v">Visitadas</option><option value="p">Pendientes</option>
@@ -178,12 +178,12 @@ var FUENTES={
  tr:'Límites: geoBoundaries (CC BY 4.0); códigos de matrícula: Natural Earth. Distritos: turkey-neighbourhoods. Ciudades y población: GeoNames (provisional).',
  mk:'Límites: geoBoundaries (CC BY 4.0). Ciudades y población: GeoNames (provisional).'};
 var NOTAS={
- es:'Lista provisional: municipios de más de 20.000 hab. (lista del INE con población de GeoNames, no oficial). Puede faltar alguno de población dispersa y sobrar o faltar los cercanos al límite. Ceuta y Melilla cuentan aquí como ciudades.',
- fr:'Comunas de más de 20.000 hab. con población legal del INSEE (año por confirmar). Paris, Marsella y Lyon cuentan como una sola. Algunas comunas nuevas fusionadas pueden estar situadas en su núcleo principal o no tener punto en el mapa.',
- it:'Comuni de más de 20.000 hab. con población del censo 2011 (ISTAT, vía comuni-json, lista de 2020): pueden faltar los creados desde 2020 y las cifras han cambiado. Algún comune no tiene punto en el mapa.',
- gr:'Lista provisional: municipios de más de 20.000 hab. según GeoNames filtrado con la lista oficial de municipios; la población no es oficial y puede faltar alguno.',
- tr:'Capitales de provincia y distritos (ilçe) de más de 20.000 hab., con población de GeoNames (no oficial; puede ser antigua). Los distritos de İstanbul, Ankara o İzmir salen como ciudades separadas. Puede faltar alguno.',
- mk:'Macedonia del Norte no tiene provincias: se usan sus 8 regiones estadísticas. Ciudades de más de 20.000 hab. con población de GeoNames (no oficial). Skopie cuenta como una sola ciudad, sin sus municipios.'};
+ es:'Lista provisional: municipios de más de 10.000 hab. (lista del INE con población de GeoNames, no oficial). Faltan muchos municipios cuyo núcleo principal es menor que el municipio, y puede sobrar o faltar alguno cercano al límite. Ceuta y Melilla cuentan aquí como ciudades.',
+ fr:'Comunas de más de 10.000 hab. con población legal del INSEE (año por confirmar). Paris, Marsella y Lyon cuentan como una sola. Algunas comunas nuevas fusionadas pueden estar situadas en su núcleo principal o no tener punto en el mapa.',
+ it:'Comuni de más de 10.000 hab. con población del censo 2011 (ISTAT, vía comuni-json, lista de 2020): pueden faltar los creados desde 2020 y las cifras han cambiado. Algún comune no tiene punto en el mapa.',
+ gr:'Lista provisional: municipios (sus sedes) de más de 10.000 hab. según GeoNames filtrado con la lista oficial de municipios; la población no es oficial y puede faltar alguno.',
+ tr:'Capitales de provincia y distritos (ilçe) de más de 10.000 hab., con población de GeoNames (no oficial; puede ser antigua). Los distritos de İstanbul, Ankara o İzmir salen como ciudades separadas. Puede faltar alguno.',
+ mk:'Macedonia del Norte no tiene provincias: se usan sus 8 regiones estadísticas. Ciudades de más de 10.000 hab. con población de GeoNames (no oficial; algunas cifras mezclan población urbana y municipal). Skopie cuenta como una sola ciudad, sin sus municipios.'};
 var data=V.ns(CC), UD=null, feats=[], cities=[], byId={}, byOld={}, citiesOf={}, sel=null, paths={}, dots={}, rows={}, groups=[], citiesG=null, mode='p';
 var svg=document.getElementById('map'),base,view;
 
@@ -194,6 +194,7 @@ function rec(id){return data[id]||(data[id]={v:0,y:'',n:''})}
 function marked(id){return !!(data[id]&&data[id].v)}
 function clean(id){var r=data[id];if(r&&!r.v&&!r.y&&!r.n)delete data[id]}
 function derivedBy(uid){return (citiesOf[uid]||[]).filter(function(c){return marked(c.id)})}   // ciudades marcadas dentro de la unidad
+function tierName(c){return c.pop>=50000?'big':c.pop>=20000?'mid':'small'}
 function eff(id){var f=byId[id];return f&&!f.city?(marked(id)||derivedBy(id).length>0):marked(id)}
 
 /* ---------- Estadísticas ---------- */
@@ -288,7 +289,7 @@ function applyFilter(){
   var q=norm($('q').value.trim()),m=$('flt').value,shown=0,sz=$('csize').value;
   Object.keys(rows).forEach(function(id){
     var f=byId[id],inMode=!!f.city===(mode==='c');
-    var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===eff(id))&&(!f.city||sz==='all'||(sz==='big')===f.big);
+    var ok=(!q||rows[id].key.indexOf(q)>-1)&&(m==='all'||(m==='v')===eff(id))&&(!f.city||sz==='all'||tierName(f)===sz);
     rows[id].li.style.display=ok?'':'none';if(ok&&inMode)shown++;
   });
   groups.forEach(function(g){g.li.style.display=g.ids.some(function(id){return rows[id].li.style.display!=='none'})?'':'none'});
@@ -329,9 +330,9 @@ function drawDots(){
   });
   sizeDots();
 }
-function updateMinor(){ // las ciudades de 20.000–50.000 solo se ven con zoom (o si están marcadas o seleccionadas)
-  if(!citiesG||!view)return;var show=base.w/view.w>=2.2;
-  cities.forEach(function(c){var el=dots[c.id];if(!el||c.big)return;c.vis=show||marked(c.id)||sel===c.id;el.style.display=c.vis?'':'none'});
+function updateMinor(){ // las de 20.000–50.000 se ven con zoom ≥ 2,2×, las menores con zoom ≥ 4,5× (y siempre las marcadas o seleccionadas)
+  if(!citiesG||!view)return;var z=base.w/view.w;
+  cities.forEach(function(c){var el=dots[c.id];if(!el||c.big)return;c.vis=z>=(c.pop>=20000?2.2:4.5)||marked(c.id)||sel===c.id;el.style.display=c.vis?'':'none'});
 }
 function sizeDots(){
   if(!citiesG||!view)return;var u=view.w/(svg.clientWidth||320);
@@ -409,15 +410,17 @@ $('rst').onclick=function(){
 function getJSON(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
 V.nav(CC);
 var P=getJSON('datos/'+CC+'/unidades.json').then(function(ud){UD=ud;return true}).catch(function(){return false});
-var C=getJSON('datos/'+CC+'/ciudades.json').then(function(j){return j.ciudades||[]}).catch(function(){return []});
-Promise.all([P,C]).then(function(res){
+var UMBRAL=10000;
+var C=getJSON('datos/'+CC+'/ciudades.json').then(function(j){UMBRAL=j.umbral||10000;return j.ciudades||[]}).catch(function(){return []});
+Promise.all([P,C]).then(function(res){res[2]=UMBRAL;
   if(!UD){$('title').textContent='No se pudieron cargar los datos';$('msg').style.display='block';return}
   document.title=UD.flag+' '+UD.pais+' · Mis lugares visitados';
   $('title').textContent=UD.flag+' '+UD.pais;$('l1').textContent=UD.tab;$('tabp').textContent=UD.tab;$('dname').textContent='Toca una '+UD.unidad1+' o ciudad';
   $('foot').textContent='Los datos se guardan solo en este navegador. Si borras los datos del sitio o cambias de dispositivo, se pierden: usa «Guardar» (un archivo con todo) e «Importar copia». '+FUENTES[CC];
   $('cnote').textContent=NOTAS[CC];
   feats=UD.items.map(function(i){return{id:i.id,name:i.n}});feats.forEach(function(f){byId[f.id]=f});
-  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,x:c.x,y:c.y,big:!!c.big,old:c.old,city:true}});
+  var um=res[2]||10000;$('l2').textContent='Ciudades > '+fmt(um)+' hab.';$('osmall').textContent=fmt(um)+'–20.000';
+  cities=res[1].map(function(c){return{id:c.id,name:c.n,p:c.p,pname:c.pn,pop:c.pop,x:c.x,y:c.y,big:c.pop>=50000,old:c.old,city:true}});
   var moved=false;
   cities.forEach(function(c){byId[c.id]=c;(citiesOf[c.p]=citiesOf[c.p]||[]).push(c);
     if(c.old){byOld[c.old]=c.id;if(data[c.old]&&!data[c.id]){data[c.id]=data[c.old];delete data[c.old];moved=true}}}); // ids antiguos (c_<nombre>) → código INE
